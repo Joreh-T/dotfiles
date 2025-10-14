@@ -1,107 +1,107 @@
 " ------------------------------
-" 基础设置
+" Basic Settings
 " ------------------------------
 
 let mapleader = " "
 
-" 启用行号显示
+" Enable line numbers
 set number
 
-" 启用超时等待
+" Enable timeout
 set timeout
 
-" 设置按键序列等待时间
+" Set key sequence timeout length
 set timeoutlen=800
 
-" 启用相对行号
+" Enable relative line numbers
 set relativenumber
 
-" 启用语法高亮
+" Enable syntax highlighting
 syntax on
 
-" 使用 4 个空格代替 Tab
+" Use 4 spaces instead of Tab
 set tabstop=4
 set shiftwidth=4
 set expandtab
 
-" 自动缩进
+" Auto indent
 set autoindent
 set smartindent
 
-" 搜索时忽略大小写，除非包含大写字母
+" Ignore case when searching, unless uppercase letters are included
 set ignorecase
 set smartcase
 
-" 高亮搜索结果
+" Highlight search results
 set hlsearch
 
-" 边输入边搜索（增量搜索）
+" Search while typing (incremental search)
 set incsearch
 
-" 启用鼠标支持（方便选中复制）
+" Enable mouse support (for easy selection and copy)
 set mouse=a
 
-" 显示匹配的括号
+" Show matching brackets
 set showmatch
 
-" 设置状态栏显示
+" Set status line display
 set laststatus=2
 
-" 使用系统剪贴板（需要支持）
+" Use system clipboard (requires support)
 if has('clipboard')
   set clipboard=unnamedplus
 endif
 
-" 显示行尾和空格等不可见字符
+" Show invisible characters like line endings and spaces
 set list
 set listchars=tab:>-,trail:.,extends:>,precedes:<
 
-" 允许使用隐藏缓冲区切换文件
+" Allow switching files with hidden buffers
 set hidden
 
-" 防止备份文件产生
+" Prevent backup file generation
 set nobackup
 set nowritebackup
 set noswapfile
 
-" 让命令行提示信息更明显
+" Make command line prompt more visible
 set showcmd
 set cmdheight=1
 
-" 提示命令完成
+" Show command completion menu
 set wildmenu
 
 " ------------------------------
-" 快捷键
+" Key Mappings
 " ------------------------------
 
-" 普通模式和可视模式下 Shift+h 跳到行首
+" Normal and Visual mode: Shift+h jump to line start
 nnoremap <S-h> ^
 
 vnoremap <S-h> ^
 
-" 普通模式下 Shift+l 跳到行尾
+" Normal mode: Shift+l jump to line end
 nnoremap <S-l> $
 
-" 可视模式下 Shift+l 跳到行尾减一字符（$h）
+" Visual mode: Shift+l jump to line end minus one character ($h)
 vnoremap <S-l> $h
 
-" 退出 vim，Normal 模式下按 <Leader>q
+" Exit vim, press <Leader>q in Normal mode
 nnoremap <Leader>qq :q<CR>
 
-" 复制整行到系统剪贴板
+" Copy entire line to system clipboard
 nnoremap <Leader>y yy"+y
 
-" 粘贴系统剪贴板内容
+" Paste system clipboard content
 nnoremap <Leader>p "+p
 
-" 垂直分屏：<Leader>\
+" Vertical split: <Leader>\
 nnoremap <Leader>\ :vsplit<CR>
 
-" 水平分屏：<Leader>-
+" Horizontal split: <Leader>-
 nnoremap <Leader>- :split<CR>
 
-" 切换窗口快捷键
+" Window navigation shortcuts
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k

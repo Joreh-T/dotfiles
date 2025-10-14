@@ -1,6 +1,8 @@
-# Neovim config based on LazyVim 💤
+# Neovim
 
-# Install Neovim
+[Neovim](https://neovim.io/) configurations based on [LazyVim💤](https://www.lazyvim.org/)
+
+## Install Neovim
 
 1. Download the appropriate Neovim. If Neovim was installed via a package manager, uninstall it first. eg. sudo apt remove neovim  
 2. Download the appropriate version. eg. wget https://github.com/neovim/neovim/releases/download/nvim-Vx.x.x.tar.gz  

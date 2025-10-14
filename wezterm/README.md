@@ -1,2 +1,3 @@
-# wezterm
-wezterm configuration
+# Wezterm
+
+[Wezterm](https://wezterm.org/) Configurations
