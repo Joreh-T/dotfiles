@@ -14,11 +14,12 @@ echo "Creating symlinks..."
 
 for SRC in "${!LINKS[@]}"; do
     DST="${LINKS[$SRC]}"
-    # Backup existing target
+
+    # Delete existing target
     if [ -e "$DST" ] || [ -L "$DST" ]; then
-        echo "Backing up existing $DST -> $DST.bak"
-        mv "$DST" "$DST.bak"
+        unlink "$DST"
     fi
+
     # Create parent directory if needed
     mkdir -p "$(dirname "$DST")"
     # Create symbolic link
@@ -26,7 +27,7 @@ for SRC in "${!LINKS[@]}"; do
     echo "Created symlink: $DST -> $SRC"
 done
 
-echo "Symlinks created."
+echo "All symlinks created."
 
 # Check if yazi is installed
 if command -v ya >/dev/null 2>&1; then
@@ -36,5 +37,5 @@ else
     echo "yazi not installed, skipping package upgrade."
 fi
 
-echo "Done!"
+echo "=== All tasks completed successfully ==="
 

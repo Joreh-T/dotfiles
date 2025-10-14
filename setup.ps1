@@ -14,10 +14,10 @@ Write-Host "Creating symlinks..."
 foreach ($src in $Links.Keys) {
     $dst = $Links[$src]
 
-    # Backup existing target
     if (Test-Path $dst) {
-        Write-Host "Backing up existing $dst -> $dst.bak"
-        Rename-Item $dst "$dst.bak"
+        # Write-Host "Removing existing file/directory at $dst"
+        # Write-Host " "
+        Remove-Item -Path $dst -Recurse -Force
     }
 
     # Create parent directory if needed
@@ -27,11 +27,12 @@ foreach ($src in $Links.Keys) {
     }
 
     # Create symbolic link
-    New-Item -ItemType SymbolicLink -Path $dst -Target $src
+    New-Item -ItemType SymbolicLink -Path $dst -Target $src | Out-Null
     Write-Host "Created symlink: $dst -> $src"
+    # Write-Host " "
 }
 
-Write-Host "Symlinks created."
+Write-Host "All symlinks created."
 
 # Check if yazi is installed
 if (Get-Command "ya" -ErrorAction SilentlyContinue) {
@@ -41,5 +42,5 @@ if (Get-Command "ya" -ErrorAction SilentlyContinue) {
     Write-Host "yazi not installed, skipping package upgrade."
 }
 
-Write-Host "Done!"
+Write-Host "=== All tasks completed successfully ==="
 
