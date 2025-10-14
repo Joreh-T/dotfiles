@@ -1,4 +1,5 @@
 local utils = require("config.utils")
+local leet_arg = "leetcode"
 
 return {
     -- Auto switch input method depends on Nvim's edit mode.
@@ -1116,39 +1117,87 @@ return {
 
     {
         "kawre/leetcode.nvim",
-        build = ":TSUpdate html", -- if you have `nvim-treesitter` installed
+        lazy = leet_arg ~= vim.fn.argv(0, -1),
+        cmd = "Leet",
         dependencies = {
             -- include a picker of your choice, see picker section for more details
             "nvim-lua/plenary.nvim",
             "MunifTanjim/nui.nvim",
         },
         opts = {
-            ---@type string
-            arg = "leetcode.nvim",
-
-            ---@type lc.lang
+            arg = leet_arg, -- Starter command, e.g. nvim leetcode
             lang = "cpp",
-
             cn = { -- leetcode.cn
                 enabled = true, ---@type boolean
                 translator = true, ---@type boolean
                 translate_problems = true, ---@type boolean
             },
-
-            ---@type lc.storage
             storage = {
                 home = vim.fn.stdpath("data") .. "/leetcode",
                 cache = vim.fn.stdpath("cache") .. "/leetcode",
             },
-
-            ---@type table<string, boolean>
             plugins = {
                 non_standalone = false,
             },
-
-            ---@type boolean
             logging = true,
-            injector = {}, ---@type table<lc.lang, lc.inject>
+            injector = {
+                ["cpp"] = {
+                    imports = function()
+                        return {
+                            "// Base & Common",
+                            "#include <bits/stdc++.h>",
+                            "#include <iostream>",
+                            "#include <string>",
+                            "#include <cstdio>",
+                            -- "#include <cstdlib>",
+                            "#include <cstring>",
+                            "#include <cassert>",
+                            -- "#include <utility>",
+                            -- "#include <functional>",
+                            -- "#include <iomanip>",
+                            -- "#include <sstream>",
+
+                            "// Containers",
+                            "#include <vector>",
+                            "#include <array>",
+                            "#include <deque>",
+                            "#include <list>",
+                            "#include <stack>",
+                            "#include <queue>",
+
+                            "// Associative Containers",
+                            "#include <map>",
+                            "#include <set>",
+                            "#include <unordered_map>",
+                            "#include <unordered_set>",
+
+                            "// Algorithms & Numeric",
+                            "#include <algorithm>",
+                            "#include <numeric>",
+                            "#include <cmath>",
+                            "#include <bitset>",
+
+                            "// Tuples & Utilities",
+                            "#include <tuple>",
+
+                            "// Limits & Constants",
+                            "#include <climits>",
+                            "#include <cfloat>",
+
+                            "// Time & Random",
+                            "#include <chrono>",
+                            "#include <random>",
+
+                            "using namespace std;",
+                        }
+                    end,
+                    after = [[int main() {
+
+}
+
+]],
+                },
+            },
             cache = {
                 update_interval = 60 * 60 * 24 * 7, ---@type integer 7 days
             },
@@ -1158,53 +1207,52 @@ return {
             },
             console = {
                 open_on_runcode = true, ---@type boolean
-                dir = "row", ---@type lc.direction
-                size = { ---@type lc.size
+                dir = "row",
+                size = {
                     width = "90%",
                     height = "75%",
                 },
                 result = {
-                    size = "60%", ---@type lc.size
+                    size = "60%",
                 },
                 testcase = {
-                    virt_text = true, ---@type boolean
-                    size = "40%", ---@type lc.size
+                    virt_text = true,
+                    size = "40%",
                 },
             },
             description = {
-                position = "left", ---@type lc.position
-
-                width = "40%", ---@type lc.size
-
-                show_stats = true, ---@type boolean
+                position = "left",
+                width = "40%",
+                show_stats = true,
             },
-
-            ---@type lc.picker
             picker = { provider = "fzf-lua" },
             hooks = {
                 ---@type fun()[]
                 ["enter"] = {},
 
                 ---@type fun(question: lc.ui.Question)[]
-                ["question_enter"] = {},
+                ["question_enter"] = {
+                    function()
+                        local found = vim.fn.search("Solution", "w")
+                        if found == 0 then
+                            vim.cmd("normal! G")
+                        end
+                    end,
+                },
 
                 ---@type fun()[]
                 ["leave"] = {},
             },
             keys = {
-                toggle = { "q" }, ---@type string|string[]
-                confirm = { "<CR>" }, ---@type string|string[]
+                toggle = { "q" },
+                confirm = { "<CR>" },
 
-                reset_testcases = "r", ---@type string
-                use_testcase = "U", ---@type string
-                focus_testcases = "H", ---@type string
-                focus_result = "L", ---@type string
+                reset_testcases = "r",
+                use_testcase = "U",
+                focus_testcases = "H",
+                focus_result = "L",
             },
-
-            ---@type lc.highlights
             theme = {},
-
-            ---@type boolean
             image_support = false,
         },
     },

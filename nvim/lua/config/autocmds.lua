@@ -290,3 +290,23 @@ vim.api.nvim_create_autocmd({ "VimEnter", "BufWinEnter" }, {
 -- })
 
 --------------- End of auto update config --------------
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("change-leetcode-question-window-highlight"),
+    pattern = "leetcode.nvim",
+    callback = function(args)
+        -- Defer the function call to the next Neovim event loop
+        -- This ensures that this autocmd executes after the plugin has completed all its synchronous setup
+        vim.api.nvim_set_hl(0, "LeetCodeDescription", { link = "bg0" })
+        vim.defer_fn(function()
+            local win_id = vim.fn.bufwinid(args.buf)
+
+            if win_id and win_id ~= -1 and vim.api.nvim_win_is_valid(win_id) and false == vim.bo[args.buf].modified then
+                vim.diagnostic.config({ virtual_text = false })
+                vim.api.nvim_set_option_value("winhighlight", "Normal:LeetCodeDescription,FloatBorder:FloatBorder", { win = win_id })
+                -- vim.bo[args.buf].filetype = "markdown"
+                -- vim.bo[args.buf].bufhidden = "wipe" -- Auto delete when closing window
+            end
+        end, 0) -- Delay of 0 ms means "Place this task at the end of the main task(Wait for the plugin configuration to take effect first)."
+    end,
+})

@@ -628,76 +628,201 @@ function M.is_plugin_loaded(name)
 end
 
 function M.get_glibc_version()
-  local output = vim.fn.system("/lib/x86_64-linux-gnu/libc.so.6 2>/dev/null")
-  local version = output:match("release version ([%d%.]+)")
-  if version then
-    return version
-  end
+    local output = vim.fn.system("/lib/x86_64-linux-gnu/libc.so.6 2>/dev/null")
+    local version = output:match("release version ([%d%.]+)")
+    if version then
+        return version
+    end
 
-  output = vim.fn.system("/usr/bin/ldd --version 2>/dev/null")
-  version = output:match("(%d+%.%d+)")
-  if version then
-    return version
-  end
+    output = vim.fn.system("/usr/bin/ldd --version 2>/dev/null")
+    version = output:match("(%d+%.%d+)")
+    if version then
+        return version
+    end
 
-  return "unknown"
+    return "unknown"
 end
 
 function M.show_glibc_version()
-  local version = M.get_glibc_version()
-  vim.notify("GLIBC version: " .. version, vim.log.levels.INFO)
+    local version = M.get_glibc_version()
+    vim.notify("GLIBC version: " .. version, vim.log.levels.INFO)
 end
 
 function M.is_glibc_less_than(target_version)
-  local current = M.get_glibc_version()
-  if current == "unknown" then
-    return false
-  end
-
-  local function split(ver)
-    local t = {}
-    for num in ver:gmatch("(%d+)") do
-      table.insert(t, tonumber(num))
+    local current = M.get_glibc_version()
+    if current == "unknown" then
+        return false
     end
-    return t
-  end
 
-  local c = split(current)
-  local t = split(target_version)
+    local function split(ver)
+        local t = {}
+        for num in ver:gmatch("(%d+)") do
+            table.insert(t, tonumber(num))
+        end
+        return t
+    end
 
-  for i = 1, math.max(#c, #t) do
-    local cv = c[i] or 0
-    local tv = t[i] or 0
-    if cv < tv then return true end
-    if cv > tv then return false end
-  end
-  return false
+    local c = split(current)
+    local t = split(target_version)
+
+    for i = 1, math.max(#c, #t) do
+        local cv = c[i] or 0
+        local tv = t[i] or 0
+        if cv < tv then
+            return true
+        end
+        if cv > tv then
+            return false
+        end
+    end
+    return false
 end
 
 function M.is_glibc_larger_than(target_version)
-  local current = M.get_glibc_version()
-  if current == "unknown" then
-    return false
-  end
-
-  local function split(ver)
-    local t = {}
-    for num in ver:gmatch("(%d+)") do
-      table.insert(t, tonumber(num))
+    local current = M.get_glibc_version()
+    if current == "unknown" then
+        return false
     end
-    return t
-  end
 
-  local c = split(current)
-  local t = split(target_version)
+    local function split(ver)
+        local t = {}
+        for num in ver:gmatch("(%d+)") do
+            table.insert(t, tonumber(num))
+        end
+        return t
+    end
 
-  for i = 1, math.max(#c, #t) do
-    local cv = c[i] or 0
-    local tv = t[i] or 0
-    if cv > tv then return true end
-    if cv < tv then return false end
-  end
-  return false
+    local c = split(current)
+    local t = split(target_version)
+
+    for i = 1, math.max(#c, #t) do
+        local cv = c[i] or 0
+        local tv = t[i] or 0
+        if cv > tv then
+            return true
+        end
+        if cv < tv then
+            return false
+        end
+    end
+    return false
 end
+
+vim.api.nvim_create_user_command("BufferInfo", function(opts)
+    local buf = vim.api.nvim_get_current_buf()
+    local lines = {}
+    local function add(title, tbl)
+        table.insert(lines, "### " .. title .. " ###")
+        for k, v in pairs(tbl) do
+            table.insert(lines, string.format("%-20s = %s", k, vim.inspect(v)))
+        end
+        table.insert(lines, "")
+    end
+
+    -- Simple info mode (:BufferInfo)
+    local general = {
+        id = buf,
+        name = vim.api.nvim_buf_get_name(buf),
+        filetype = vim.bo[buf].filetype,
+        buftype = vim.bo[buf].buftype,
+        modified = vim.bo[buf].modified,
+        readonly = vim.bo[buf].readonly,
+        modifiable = vim.bo[buf].modifiable,
+        listed = vim.bo[buf].buflisted,
+        loaded = vim.api.nvim_buf_is_loaded(buf),
+        line_count = vim.api.nvim_buf_line_count(buf),
+        encoding = vim.bo[buf].fileencoding,
+        fileformat = vim.bo[buf].fileformat,
+        swapfile = vim.bo[buf].swapfile,
+    }
+
+    add("General", general)
+
+    if opts.bang then
+        -- Verbose info mode (:BufferInfo!)
+        local bufinfo = vim.fn.getbufinfo(buf)[1] or {}
+        local ok, vars = pcall(vim.fn.getbufvar, buf, "")
+        if not ok then
+            vars = {}
+        end
+
+        local opts_tbl = {}
+        for _, name in ipairs(vim.tbl_keys(vim.api.nvim_get_all_options_info())) do
+            local ok_opt, val = pcall(vim.api.nvim_get_option_value, name, { buf = buf })
+            if ok_opt then
+                opts_tbl[name] = val
+            end
+        end
+
+        add("BufInfo", bufinfo)
+        add("Vars", vars)
+        add("Options", opts_tbl)
+    end
+
+    -- Send to quickfix
+    local qf_items = {}
+    for i, line in ipairs(lines) do
+        table.insert(qf_items, { lnum = i, text = line })
+    end
+    vim.fn.setqflist(qf_items, "r")
+    vim.cmd("copen")
+end, {
+    bang = true, -- For: BufferInfo!
+    desc = "Show current buffer information",
+})
+
+vim.api.nvim_create_user_command("BufferHighlights", function(opts)
+    local show_color = opts.bang -- Show verbose info with colors and styles if '!' is used
+    local groups = vim.fn.getcompletion("@lsp", "highlight")
+    local result = {}
+
+    -- Parse hl.link recursively
+    local function resolve_hl(name, depth)
+        depth = depth or 0
+        if depth > 5 then
+            return name
+        end -- Avoid infinite loop
+        local hl = vim.api.nvim_get_hl(0, { name = name, link = true })
+        if hl.link then
+            return resolve_hl(hl.link, depth + 1)
+        end
+        return name, hl
+    end
+
+    for _, g in ipairs(groups) do
+        local resolved_name, hl = resolve_hl(g)
+        hl = hl or {}
+
+        local styles = {}
+        for _, style in ipairs({ "bold", "italic", "underline", "strikethrough" }) do
+            if hl[style] then
+                table.insert(styles, style)
+            end
+        end
+        local style_str = #styles > 0 and table.concat(styles, ",") or "-"
+
+        local line = ""
+        if show_color then
+            local fg = hl.fg and string.format("#%06x", hl.fg) or "-"
+            local bg = hl.bg and string.format("#%06x", hl.bg) or "-"
+            local sp = hl.sp and string.format("#%06x", hl.sp) or "-"
+            line = string.format("%-40s → %-25s  fg=%-9s bg=%-9s sp=%-9s style=%s", g, resolved_name, fg, bg, sp, style_str)
+        else
+            line = string.format("%-40s → %s", g, resolved_name)
+        end
+        table.insert(result, line)
+    end
+
+    if #result == 0 then
+        vim.notify("No @lsp.* highlight groups found", vim.log.levels.INFO)
+        return
+    end
+
+    vim.fn.setqflist({}, "r", { title = "LSP/Treesitter Highlight Links", lines = result })
+    vim.cmd("copen")
+end, {
+    bang = true,
+    desc = "Display current LSP/Treesitter highlight links in Neovim (with ! shows colors and styles)",
+})
 
 return M
