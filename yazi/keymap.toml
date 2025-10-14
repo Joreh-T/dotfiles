@@ -1,0 +1,15 @@
+# keymap.toml
+
+# there are two attributes: prepend_keymap and append_keymap
+[mgr]
+prepend_keymap = [
+    {on = ["g", "c"], run = "plugin vcs-files", desc = "Show Git file changes"},
+    {on = "<Enter>", run = "plugin smart-enter" },
+]
+
+# When you don't need any default and want to fully customize your keybindings, use keymap
+# keymap = [
+# 	# This will override all default keybindings, and just keep the two below.
+# 	{ on = "<C-a>",      run = "my-cmd1" },
+# 	{ on = [ "g", "b" ], run = "my-cmd2" },
+# ]
