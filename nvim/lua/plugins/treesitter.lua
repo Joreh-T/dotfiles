@@ -31,6 +31,7 @@ local languages_parser = {
     "verilog",
     "vhdl",
     "arduino",
+    "latex",
 }
 
 if utils.is_windows() or (utils.is_linux() and utils.is_glibc_larger_than("2.31")) then

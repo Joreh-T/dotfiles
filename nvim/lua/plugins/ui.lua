@@ -37,7 +37,13 @@ return {
     {
         "folke/snacks.nvim",
         opts = {
+            scroll = {
+                -- use the default settings
+            },
             image = {
+                -- use the default settings
+            },
+            input = {
                 -- use the default settings
             },
             dashboard = {

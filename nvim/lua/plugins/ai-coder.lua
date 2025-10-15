@@ -77,9 +77,11 @@ return {
         end)(),
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
-            "stevearc/dressing.nvim",
+            -- "stevearc/dressing.nvim", -- for input provider dressing
+            "folke/snacks.nvim", -- -- for input provider snacks
             "nvim-lua/plenary.nvim",
             "MunifTanjim/nui.nvim",
+            "ibhagwan/fzf-lua", -- for file_selector provider fzf
             --- The below dependencies are optional,
             "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
             -- "zbirenbaum/copilot.lua", -- for providers='copilot'

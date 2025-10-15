@@ -20,12 +20,12 @@ map("n", "<CR>", "o<esc>", { noremap = true, silent = true })
 map("t", "jk", [[<C-\><C-n>]], { noremap = true, silent = true })
 
 --open/close terminal
-map("n", "<a-`>", function() Snacks.terminal() end, { desc = "Terminal (cwd)" })
+map({"n", "t"}, "<a-`>", function() Snacks.terminal(nil) end, { desc = "Terminal (cwd)" })
 -- map("n", "<a-`>", function() Snacks.terminal(nil, { cwd = LazyVim.root() }) end, { desc = "Open Terminal (Root Dir)" })
 -- { map("t", "<a-`>", "<cmd>close<cr>", { desc = "Hide Terminal" }) },
 
 -- map("n", "<a-`>", utils.open_terminal_rezise_height, { desc = "Terminal (cwd)" })
-map("t", "<a-`>", utils.close_terminal_and_focus_largest, { desc = "Hide Terminal and Focus Largest Window" })
+-- map("t", "<a-`>", utils.close_terminal_and_focus_largest, { desc = "Hide Terminal and Focus Largest Window" })
 
 
 map("n", "<leader>ft", function()
