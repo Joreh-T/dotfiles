@@ -95,6 +95,13 @@ return {
                     ["header"] = { "fg", "Comment" },
                     ["gutter"] = "-1",
                 },
+                keymap = {
+                    fzf = {
+                        true,
+                        ["alt-j"] = "preview-down",
+                        ["alt-k"] = "preview-up",
+                    },
+                },
                 hls = {
                     cursorline = "CustomFzfCursorline",
                 },

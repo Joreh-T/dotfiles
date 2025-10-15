@@ -32,6 +32,7 @@ local languages_parser = {
     "vhdl",
     "arduino",
     "latex",
+    "css",
 }
 
 if utils.is_windows() or (utils.is_linux() and utils.is_glibc_larger_than("2.31")) then
