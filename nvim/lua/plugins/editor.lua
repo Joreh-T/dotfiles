@@ -1194,8 +1194,19 @@ return {
                             "// Time & Random",
                             "#include <chrono>",
                             "#include <random>",
+                            "",
 
                             "using namespace std;",
+
+                            "",
+                            "#define DEBUG 1",
+                            "",
+                            "#if DEBUG",
+                            "    #define debug_print(format, ...) do { printf(format, __VA_ARGS__) } while (0)",
+                            "#else",
+                            "    #define debug_print(format, ...)",
+                            "#endif",
+                            "",
                         }
                     end,
                     after = [[int main() {

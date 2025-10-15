@@ -47,7 +47,7 @@
 - [python3](https://www.python.org/downloads/windows/)
 - [tree-sitter-cli](https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md)
   > `npm install -g tree-sitter-cli`
-- [lazygi](https://github.com/jesseduffield/lazygit)
+- [lazygit](https://github.com/jesseduffield/lazygit)
   > Optional.
 - [Ghostscript](https://ghostscript.com/releases/gsdnld.html)
   > Optional. For PDF support.
@@ -72,7 +72,7 @@
 - [python3](https://www.python.org/downloads/)
 - [tree-sitter-cli](https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md)
   > Not needed if glibc < 2.32. Install with: `npm install -g tree-sitter-cli`
-- [lazygi](https://github.com/jesseduffield/lazygit)
+- [lazygit](https://github.com/jesseduffield/lazygit)
   > Optional.
 - [Ghostscript](https://ghostscript.com/releases/gsdnld.html)
   > Optional. For PDF support.

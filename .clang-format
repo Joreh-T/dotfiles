@@ -1,0 +1,309 @@
+# =================================================================
+# Clang-Format Style Options
+# =================================================================
+
+# 语言: Cpp, Java, JavaScript, ObjC, Proto, TableGen, TextProto
+# Language: Cpp
+
+# 基础样式：可选项为 LLVM, Google, Chromium, Mozilla, WebKit
+#
+BasedOnStyle: LLVM
+
+# --- Indentation ---
+
+# 缩进宽度
+IndentWidth: 4
+
+# Tab 字符的宽度
+TabWidth: 4
+
+# 访问说明符(public, private等)的偏移量。
+# -4 表示相对于当前缩进向左偏移4个空格。
+AccessModifierOffset: -4
+
+# 缩进 case 标签。
+# true:
+#   switch (x) {
+#     case 1:
+#       ...
+# false:
+#   switch (x) {
+#   case 1:
+#     ...
+IndentCaseLabels: true
+
+# 预处理指令的缩进方式。
+# BeforeHash: 在 '#' 前添加缩进。
+# AfterHash: 在 '#' 后添加缩进。
+# None: 不缩进。
+IndentPPDirectives: BeforeHash
+
+# 当函数返回类型换行时，是否缩进函数名。
+IndentWrappedFunctionNames: false
+
+# 命名空间的缩进方式。
+# None: 不缩进命名空间。
+# Inner: 缩进命名空间内的代码。
+# All: 缩进命名空间本身及其内部代码。
+NamespaceIndentation: Inner
+
+# --- Spacing ---
+
+# 在赋值运算符前添加空格。
+# true: x = 1; false: x=1;
+SpaceBeforeAssignmentOperators: true
+
+# 在 C 风格类型转换后添加空格。
+# true: (int) x; false: (int)x;
+SpaceAfterCStyleCast: false
+
+# 在 `template` 关键字后添加空格。
+# true: template <...>; false: template<...>;
+SpaceAfterTemplateKeyword: true
+
+# 控制在圆括号前添加空格的策略。
+# Never: 总不加空格, func(x)
+# ControlStatements: 只在控制语句前加空格, if (x)
+# Always: 总加空格, func (x)
+SpaceBeforeParens: ControlStatements
+
+# 在空的圆括号中添加空格。
+# true: f( ); false: f();
+SpaceInEmptyParentheses: false
+
+# 在圆括号的 '(' 后和 ')' 前添加空格。
+# true: ( x ); false: (x);
+SpacesInParentheses: false
+
+# 在方括号的 '[' 后和 ']' 前添加空格。
+SpacesInSquareBrackets: false
+
+# 在尖括号的 '<' 后和 '>' 前添加空格。
+# true: std::vector< int >; false: std::vector<int>;
+SpacesInAngles: false
+
+# 在 C 风格类型转换的括号内添加空格。
+# true: ( int )x; false: (int)x;
+SpacesInCStyleCastParentheses: false
+
+# 在 C++11 的列表初始化的大括号 '{' 后和 '}' 前添加空格。
+# true: { 1, 2 }; false: {1, 2};
+Cpp11BracedListStyle: false
+
+# 在构造函数初始化列表的冒号前添加空格。
+# true: C() : m(1); false: C(): m(1);
+SpaceBeforeCtorInitializerColon: true
+
+# 在继承列表的冒号前添加空格。
+# true: class A : public B; false: class A: public B;
+SpaceBeforeInheritanceColon: true
+
+# 在基于范围的 for 循环的冒号前添加空格。
+# true: for (auto x : v); false: for (auto x: v);
+SpaceBeforeRangeBasedForLoopColon: true
+
+# 在尾随注释前的空格数。
+SpacesBeforeTrailingComments: 1
+
+# --- Line Breaking ---
+
+# 每行的字符数限制。0 表示没有限制。
+# 推荐设置为 80, 100 或 120。设置为 0 会导致代码风格不一致。
+ColumnLimit: 120
+
+# 在二元运算符前换行。
+# None: 在运算符后换行。
+# NonAssignment: 在非赋值的运算符前换行。
+# All: 在所有运算符前换行。
+BreakBeforeBinaryOperators: NonAssignment
+
+# 在三元运算符前换行。
+# true:
+#   very_long_variable = condition
+#       ? true_value
+#       : false_value;
+# false:
+#   very_long_variable = condition ?
+#       true_value :
+#       false_value;
+BreakBeforeTernaryOperators: true
+
+# 大括号换行规则。使用 Custom 时，由 BraceWrapping 中的选项控制。
+# Attach: 大括号总是在同一行。
+# Linux: 类似 Attach，但在函数、命名空间和类定义后换行。
+# Allman: 大括号总是换行。
+# Stroustrup: 类似 Allman，但在函数定义、catch 和 else 后不换行。
+BreakBeforeBraces: Custom
+
+# 自定义大括号换行，仅当 BreakBeforeBraces 设置为 Custom 时有效。
+BraceWrapping:
+  AfterClass: false             # class 定义后不换行
+  AfterControlStatement: false  # 控制语句 (if/for/while) 后不换行
+  AfterEnum: false              # enum 定义后不换行
+  AfterFunction: false          # 函数定义后不换行
+  AfterStruct: false            # struct 定义后不换行
+  AfterUnion: false             # union 定义后不换行
+  AfterExternBlock: false       # extern "C" 块后不换行
+  BeforeCatch: false            # catch 前不换行
+  BeforeElse: true              # else 前换行
+  IndentBraces: false           # 不额外缩进大括号
+  SplitEmptyFunction: true      # 分离空函数体到新行
+  SplitEmptyRecord: true        # 分离空结构体/类体到新行
+  SplitEmptyNamespace: true     # 分离空命名空间体到新行
+
+# 总是在 template 声明后换行。
+# true:
+#   template <typename T>
+#   void f(T);
+# false:
+#   template <typename T> void f(T);
+AlwaysBreakTemplateDeclarations: true
+
+# 总是在返回类型后换行。
+# None: 不换行。
+# All: 所有函数都换行。
+# TopLevel: 只在顶层函数换行。
+AlwaysBreakAfterReturnType: None
+
+# 总是在多行字符串字面量前换行。
+AlwaysBreakBeforeMultilineStrings: false
+
+# 构造函数初始化列表的换行规则。
+# AfterColon: 在冒号后换行，每个初始化项占一行。
+# BeforeColon: 在冒号前换行。
+BreakConstructorInitializers: AfterColon
+
+# 继承列表的换行规则。
+BreakInheritanceList: AfterColon
+
+# 是否打断字符串字面量。
+BreakStringLiterals: false
+
+# --- Packing / Short Statements ---
+
+# 允许短的 if 语句放在同一行。
+# true: if (a) return;
+AllowShortIfStatementsOnASingleLine: true
+
+# 允许短的循环语句放在同一行。
+# true: while (true) continue;
+AllowShortLoopsOnASingleLine: true
+
+# 允许短的函数放在同一行。
+# None: 不允许。
+# Empty: 只允许空函数。
+# Inline: 允许在类/结构体中定义的短函数。
+# All: 允许所有短函数。
+AllowShortFunctionsOnASingleLine: Inline
+
+# 允许短的 case 标签放在同一行。
+# true: case 1: return;
+AllowShortCaseLabelsOnASingleLine: true
+
+# 允许短的代码块放在同一行。
+# true: { return; }
+AllowShortBlocksOnASingleLine: true
+
+# 将函数的参数打包。false 表示所有参数要么在同一行，要么各自一行。
+BinPackArguments: false
+
+# 将函数的形参打包。false 表示所有形参要么在同一行，要么各自一行。
+BinPackParameters: false
+
+# --- Alignment ---
+
+# 开括号(圆括号、尖括号、方括号)后的对齐方式。
+# Align: 对齐。
+# DontAlign: 不对齐。
+# AlwaysBreak: 总是在开括号后换行。
+AlignAfterOpenBracket: Align
+
+# 对齐连续的赋值语句。
+AlignConsecutiveAssignments: false
+
+# 对齐连续的声明语句。
+AlignConsecutiveDeclarations: false
+
+#对齐连续的宏定义 true:对齐 AcrossEmptyLinesAndComments:跨行对齐
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+
+# 对齐使用反斜杠换行的多行语句中的反斜杠。
+AlignEscapedNewlines: Right
+
+# 水平对齐二元和三元表达式的操作数。
+AlignOperands: true
+
+# 对齐尾随的注释。
+AlignTrailingComments: true
+
+# 指针和引用的对齐方式。
+# Left: 靠左对齐 (int* p)。
+# Right: 靠右对齐 (int *p)。
+# Middle: 居中对齐 (int * p)。
+PointerAlignment: Right
+
+# 是否根据代码中最常用的指针/引用对齐方式来决定对齐。
+# 设置为 false 以强制使用 PointerAlignment 的设置。
+DerivePointerAlignment: false
+
+# --- Includes Sorting ---
+
+# 是否对 #include 进行排序。
+# 设置为 true，并配置下面的规则。
+SortIncludes: true
+
+# 对 #include 进行分组。Regroup 会根据 IncludeCategories 重新排序和分组。
+IncludeBlocks: Regroup
+
+# #include 分类规则，按顺序匹配。
+# ^<.*>       : 匹配系统头文件 (例如 <vector>)
+# "^(user/|util/)" : 匹配特定项目目录的头文件
+# ".*"        : 匹配所有其他头文件
+IncludeCategories:
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+  - Regex:           '^<.*>'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
+
+# 是否对 using 声明进行排序。
+SortUsingDeclarations: false
+
+# --- Miscellaneous ---
+
+# 使用 Tab 字符的策略。
+# Never: 从不使用 Tab，总是使用空格。
+# ForIndentation: 只在缩进时使用 Tab。
+# Always: 总是使用 Tab。
+# 使用 Never 以避免不同编辑器 Tab 宽度设置不一的问题。
+UseTab: Never
+
+# C++ 标准。Auto 会自动检测。
+Standard: Auto
+
+# 允许 clang-format 重新排版注释。
+ReflowComments: true
+
+# 连续空行的最大数量。
+MaxEmptyLinesToKeep: 1
+
+# 是否在块的开始处保留空行。
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# 是否合并 C++17 的嵌套命名空间。
+# true: namespace A::B::C { ... }
+# false: namespace A { namespace B { namespace C { ... } } }
+CompactNamespaces: true
+
+# 构造函数初始化列表要么全在一行，要么每个成员占一行。
+# true 可以防止 clang-format 创建混合样式。
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+# 构造函数初始化列表的缩进宽度。
+# 与 IndentWidth 一致。
+ConstructorInitializerIndentWidth: 4
+
+# 延续行的缩进宽度。
+ContinuationIndentWidth: 4
+
