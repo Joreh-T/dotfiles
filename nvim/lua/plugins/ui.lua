@@ -37,6 +37,9 @@ return {
     {
         "folke/snacks.nvim",
         opts = {
+            image = {
+                -- use the default settings
+            },
             dashboard = {
                 preset = {
                     --           header = [[
