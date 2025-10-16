@@ -35,6 +35,9 @@ local languages_parser = {
     "css",
 }
 
+local to_remove = { "latex" }
+local remove_set = {}
+
 if utils.is_windows() or (utils.is_linux() and utils.is_glibc_larger_than("2.31")) then
     return {
         "nvim-treesitter/nvim-treesitter",
@@ -49,6 +52,15 @@ if utils.is_windows() or (utils.is_linux() and utils.is_glibc_larger_than("2.31"
         },
     }
 else
+    -- Remove languages that are problematic on older glibc versions
+    for _, lang in ipairs(to_remove) do
+        remove_set[lang] = true
+    end
+
+    languages_parser = vim.tbl_filter(function(lang)
+        return not remove_set[lang]
+    end, languages_parser)
+
     return {
         "nvim-treesitter/nvim-treesitter",
         branch = "master",

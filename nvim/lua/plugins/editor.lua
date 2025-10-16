@@ -1153,24 +1153,26 @@ return {
                         return {
                             "// Base & Common",
                             "#include <bits/stdc++.h>",
+                            "",
+
+                            "#include <cassert>",
+                            "#include <cstdio>",
+                            "#include <cstring>",
                             "#include <iostream>",
                             "#include <string>",
-                            "#include <cstdio>",
                             -- "#include <cstdlib>",
-                            "#include <cstring>",
-                            "#include <cassert>",
                             -- "#include <utility>",
                             -- "#include <functional>",
                             -- "#include <iomanip>",
                             -- "#include <sstream>",
 
                             "// Containers",
-                            "#include <vector>",
                             "#include <array>",
                             "#include <deque>",
                             "#include <list>",
-                            "#include <stack>",
                             "#include <queue>",
+                            "#include <stack>",
+                            "#include <vector>",
 
                             "// Associative Containers",
                             "#include <map>",
@@ -1180,11 +1182,11 @@ return {
 
                             "// Algorithms & Numeric",
                             "#include <algorithm>",
-                            "#include <numeric>",
-                            "#include <cmath>",
                             "#include <bitset>",
+                            "#include <cmath>",
+                            "#include <numeric>",
 
-                            "// Tuples & Utilities",
+                            "// Tuples",
                             "#include <tuple>",
 
                             "// Limits & Constants",
