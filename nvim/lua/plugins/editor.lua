@@ -1204,7 +1204,7 @@ return {
                             "#define DEBUG 1",
                             "",
                             "#if DEBUG",
-                            "    #define debug_print(format, ...) do { printf(format, __VA_ARGS__) } while (0)",
+                            "    #define debug_print(format, ...) do { printf(format, ##__VA_ARGS__); } while (0)",
                             "#else",
                             "    #define debug_print(format, ...)",
                             "#endif",
