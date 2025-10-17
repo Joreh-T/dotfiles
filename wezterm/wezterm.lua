@@ -238,7 +238,7 @@ config.keys = {
         -- true clear
         -- action = wezterm.action.ClearScrollback 'ScrollbackAndViewport',
     },
-    -- CTRL + W close current Tab
+    -- ALT + W close current Tab
     { key = "w", mods = "ALT", action = action.CloseCurrentTab({ confirm = true }) },
     -- close current Tab
     { key = "q", mods = "ALT", action = action.CloseCurrentPane({ confirm = true }) },
@@ -638,7 +638,7 @@ wezterm.on("augment-command-palette", function(window, pane)
                 pane:send_text("admin@123\r\n")
                 wezterm.sleep_ms(500)
                 pane:send_text("inhand\r\n")
-                wezterm.sleep_ms(300)
+                wezterm.sleep_ms(500)
                 pane:send_text("64391099@inhand\r\n")
                 window:active_tab():set_title("SSH->954C")
             end),
@@ -654,7 +654,7 @@ wezterm.on("augment-command-palette", function(window, pane)
                 pane:send_text("admin@123\r\n")
                 wezterm.sleep_ms(500)
                 pane:send_text("inhand\r\n")
-                wezterm.sleep_ms(200)
+                wezterm.sleep_ms(500)
                 pane:send_text("64391099@inhand\r\n")
                 window:active_tab():set_title("Telnet->954C")
             end),
