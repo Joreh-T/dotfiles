@@ -310,3 +310,11 @@ vim.api.nvim_create_autocmd("FileType", {
         end, 0) -- Delay of 0 ms means "Place this task at the end of the main task(Wait for the plugin configuration to take effect first)."
     end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("disable-auto-comment-when-newline"),
+    pattern = { "*" },
+    callback = function()
+        vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+    end,
+})

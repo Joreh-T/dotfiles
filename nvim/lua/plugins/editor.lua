@@ -60,6 +60,11 @@ return {
             local config = fzf.config
             local actions = fzf.actions
 
+            config.defaults.keymap.fzf["alt-j"] = "preview-down"
+            config.defaults.keymap.fzf["alt-k"] = "preview-up"
+            config.defaults.keymap.builtin["<a-j>"] = "preview-down"
+            config.defaults.keymap.builtin["<a-k>"] = "preview-up"
+
             local hl = vim.api.nvim_get_hl(0, { name = "FzfLuaCursorLine", link = false })
             local underline = vim.api.nvim_get_hl(0, { name = "FzfLuaHeaderBind", link = false })
 
@@ -95,13 +100,6 @@ return {
                     ["header"] = { "fg", "Comment" },
                     ["gutter"] = "-1",
                 },
-                keymap = {
-                    fzf = {
-                        true,
-                        ["alt-j"] = "preview-down",
-                        ["alt-k"] = "preview-up",
-                    },
-                },
                 hls = {
                     cursorline = "CustomFzfCursorline",
                 },
@@ -130,7 +128,7 @@ return {
                         -- noremap = true: Avoid recursive mappings
                         --
                         -- '+' register
-                        vim.keymap.set("t", "<C-v>", [[<C-\><C-n>"+pi]], { noremap = true, silent = true, buffer = true })
+                        -- vim.keymap.set("t", "<C-v>", [[<C-\><C-n>"+pi]], { noremap = true, silent = true, buffer = true })
                         -- '*' register
                         -- vim.keymap.set("t", "<C-v>", [[<C-\><C-n>"*pi]], { noremap = true, silent = true, buffer = true })
                     end,
@@ -179,7 +177,7 @@ return {
                             -- height is number of items minus 15 lines for the preview, with a max of 80% screen height
                             height = math.floor(math.min(vim.o.lines * 0.8 - 16, #items + 2) + 0.5) + 16,
                             width = 0.5,
-                            preview = not vim.tbl_isempty(LazyVim.lsp.get_clients({ bufnr = 0, name = "vtsls" })) and {
+                            preview = not vim.tbl_isempty(vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })) and {
                                 layout = "vertical",
                                 vertical = "down:15,border-top",
                                 hidden = "hidden",
@@ -198,32 +196,6 @@ return {
                 end,
                 lsp = {},
             }
-        end,
-        config = function(_, opts)
-            if opts[1] == "default-title" then
-                local function fix(t)
-                    t.prompt = t.prompt ~= nil and " " or nil
-                    for _, v in pairs(t) do
-                        if type(v) == "table" then
-                            fix(v)
-                        end
-                    end
-                    return t
-                end
-                opts = vim.tbl_deep_extend("force", fix(require("fzf-lua.profiles.default-title")), opts)
-                opts[1] = nil
-            end
-            require("fzf-lua").setup(opts)
-        end,
-        init = function()
-            LazyVim.on_very_lazy(function()
-                vim.ui.select = function(...)
-                    require("lazy").load({ plugins = { "fzf-lua" } })
-                    local opts = LazyVim.opts("fzf-lua") or {}
-                    require("fzf-lua").register_ui_select(opts.ui_select or nil)
-                    return vim.ui.select(...)
-                end
-            end)
         end,
     },
     -- {

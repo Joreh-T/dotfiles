@@ -36,9 +36,9 @@ else
 end
 
 -- Reduce timeoutlen in terminal mode to avoid HJKL stuttering
-vim.cmd [[
-  autocmd TermOpen * setlocal timeoutlen=10
-]]
+-- vim.cmd [[
+--   autocmd TermOpen * setlocal ttimeoutlen=10
+-- ]]
 
 vim.g.autoformat = false
 vim.o.wrap = true

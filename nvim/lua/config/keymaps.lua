@@ -17,7 +17,6 @@ map("n", "<C-o>", "<C-o>", { noremap = true, silent = true })
 map("n", "<S-u>", "<C-r>", { noremap = true, silent = true })
 map("n", "<leader>r", "<cmd>LspRestart<CR>", { noremap = true, silent = false, desc = "Restart LSP" })
 map("n", "<CR>", "o<esc>", { noremap = true, silent = true })
-map("t", "jk", [[<C-\><C-n>]], { noremap = true, silent = true })
 
 --open/close terminal
 map({"n", "t"}, "<a-`>", function() Snacks.terminal(nil) end, { desc = "Terminal (cwd)" })
@@ -56,7 +55,7 @@ map("v", "<S-l>", "$h", { noremap = true, silent = true })
 
 -----------------------------------------------------------
 map("i", "jk", "<esc>", { noremap = true, silent = true })
-
+-- map("t", "jk", [[<C-\><C-n>]], { noremap = true, silent = true })
 -----------------------------------------------------------
 map("v", "jkl", "<esc>", { noremap = true, silent = true })
 
@@ -67,18 +66,18 @@ map("n", "gh", function()
 end, { noremap = true, silent = true, desc = "Hover diagnostic" })
 
 -- Ctrl + c
-map({ "n", "v" }, "<C-c>", '"+y', { noremap = true, desc = "Copy to system clipboard" })
+-- map({ "n", "v" }, "<C-c>", '"+y', { noremap = true, desc = "Copy to system clipboard" })
 
 map("v", "p", '"_dP') -- Prevent overwriting the system clipboard when pasting in visual mode
 -- Ctrl + v
-map("n", "<C-v>", '"+p', { noremap = true, desc = "Paste from system clipboard" })
+-- map("n", "<C-v>", '"+p', { noremap = true, desc = "Paste from system clipboard" })
 -- map("i", "<C-v>", "<C-r>+", { noremap = true, desc = "Paste from system clipboard" }) -- In Neovide, if the data to be pasted contains comment symbols, it will trigger automatic commenting.
-map("i", "<C-v>", '<esc>"+p', { noremap = true, desc = "Paste from system clipboard" })
+-- map("i", "<C-v>", '<esc>"+p', { noremap = true, desc = "Paste from system clipboard" })
 -- map('c', '<C-v>', '<C-r>+', { noremap = true, silent = true }) -- The UI won't refresh immediately.
-map("c", "<C-v>", function()
-    return vim.fn.getreg("+")
-end, { noremap = true, expr = true, desc = "Paste clipboard in cmdline" })
-map("t", "<C-v>", [[<C-\><C-n>"+pa<Right>]], { noremap = true, desc = "Paste from system clipboard in terminal" })
+-- map("c", "<C-v>", function()
+--     return vim.fn.getreg("+")
+-- end, { noremap = true, expr = true, desc = "Paste clipboard in cmdline" })
+-- map("t", "<C-v>", [[<C-\><C-n>"+pa<Right>]], { noremap = true, desc = "Paste from system clipboard in terminal" })
 --   {map("n", "gk", "<cmd>lua vim.diagnostic.goto_prev()<CR>", { noremap = true, silent = true })},
 --   {map("n", "gj", "<cmd>lua vim.diagnostic.goto_next()<CR>", { noremap = true, silent = true })}
 --   { "K", function() return vim.lsp.buf.hover() end, desc = "Hover" },
