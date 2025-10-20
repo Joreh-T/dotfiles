@@ -708,6 +708,35 @@ function M.is_glibc_larger_than(target_version)
     return false
 end
 
+local diffview_open = false
+local diffviewFileHistory_open = false
+
+function M.set_diffview_open(state)
+    diffview_open = state
+end
+
+function M.set_diffviewFileHistory_open(state)
+    diffviewFileHistory_open = state
+end
+
+function M.toggle_diffview()
+    if diffview_open then
+        vim.cmd("DiffviewClose")
+        diffview_open = false
+    else
+        vim.cmd("DiffviewOpen")
+    end
+end
+
+function M.toggle_history_view()
+    if diffviewFileHistory_open then
+        vim.cmd("DiffviewClose")
+        diffviewFileHistory_open = false
+    else
+        vim.cmd("DiffviewFileHistory")
+    end
+end
+
 vim.api.nvim_create_user_command("BufferInfo", function(opts)
     local buf = vim.api.nvim_get_current_buf()
     local lines = {}
@@ -769,6 +798,63 @@ vim.api.nvim_create_user_command("BufferInfo", function(opts)
 end, {
     bang = true, -- For: BufferInfo!
     desc = "Show current buffer information",
+})
+
+vim.api.nvim_create_user_command("WindowInfo", function(opts)
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_win_get_buf(win)
+    local lines = {}
+
+    local function add(title, tbl)
+        table.insert(lines, "### " .. title .. " ###")
+        for k, v in pairs(tbl) do
+            table.insert(lines, string.format("%-20s = %s", k, vim.inspect(v)))
+        end
+        table.insert(lines, "")
+    end
+
+    -- Simple info mode (:WindowInfo)
+    local general = {
+        id = win,
+        buf = buf,
+        winid = win,
+        bufnr = buf,
+        win_type = vim.fn.win_gettype(win),
+        width = vim.api.nvim_win_get_width(win),
+        height = vim.api.nvim_win_get_height(win),
+        winbar = vim.wo[win].winbar,
+        cursor = vim.api.nvim_win_get_cursor(win),
+        topline = vim.fn.line("w0", win),
+        botline = vim.fn.line("w$", win),
+        relative = vim.api.nvim_win_get_config(win).relative,
+        is_floating = vim.api.nvim_win_get_config(win).relative ~= "",
+        is_valid = vim.api.nvim_win_is_valid(win),
+    }
+    add("General", general)
+
+    if opts.bang then
+        -- Verbose info mode (:WindowInfo!)
+        local config = vim.api.nvim_win_get_config(win)
+        local opts_tbl = {}
+        for _, name in ipairs(vim.tbl_keys(vim.api.nvim_get_all_options_info())) do
+            local ok_opt, val = pcall(vim.api.nvim_get_option_value, name, { win = win })
+            if ok_opt then
+                opts_tbl[name] = val
+            end
+        end
+        add("WindowConfig", config)
+        add("WindowOptions", opts_tbl)
+    end
+
+    local qf_items = {}
+    for i, line in ipairs(lines) do
+        table.insert(qf_items, { lnum = i, text = line })
+    end
+    vim.fn.setqflist(qf_items, "r")
+    vim.cmd("copen")
+end, {
+    bang = true, -- For :WindowInfo!
+    desc = "Show current window information",
 })
 
 vim.api.nvim_create_user_command("BufferHighlights", function(opts)

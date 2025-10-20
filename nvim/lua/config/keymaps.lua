@@ -83,55 +83,32 @@ map("v", "p", '"_dP') -- Prevent overwriting the system clipboard when pasting i
 --   { "K", function() return vim.lsp.buf.hover() end, desc = "Hover" },
 
 ------------------------- Git Tools -------------------------
-local diffview_open = false
-local diffviewFileHistory_open = false
+map("n", "<leader>gd", utils.toggle_diffview, { noremap = true, silent = true, desc = "Toggle Diffview" })
+map("n", "<leader>gH", utils.toggle_history_view, { noremap = true, silent = true, desc = "Toggle File History" })
 
-local function toggle_diffview()
-    if diffview_open then
-        vim.cmd("DiffviewClose")
-        diffview_open = false
-    else
-        vim.cmd("DiffviewOpen")
-        diffview_open = true
-    end
-end
-
-local function toggle_history_view()
-    if diffviewFileHistory_open then
-        vim.cmd("DiffviewClose")
-        diffviewFileHistory_open = false
-    else
-        vim.cmd("DiffviewFileHistory")
-        diffviewFileHistory_open = true
-    end
-end
-
-map("n", "<leader>gd", toggle_diffview, { noremap = true, silent = true, desc = "Toggle Diffview" })
-map("n", "<leader>gH", toggle_history_view, { noremap = true, silent = true, desc = "Toggle File History" })
-
-map("n", "q", function()
-    local closed_diffview = false
-    -- Traverse all windows
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-        -- check if the window is a Diffview window
-        local ok, buf = pcall(vim.api.nvim_win_get_buf, win)
-        if ok then
-            local cur_buf_type = vim.bo[buf].filetype
-            if cur_buf_type == "DiffviewFiles" or cur_buf_type == "DiffviewFileHistory" then
-                vim.api.nvim_win_call(win, function()
-                    vim.cmd("DiffviewClose")
-                end)
-                closed_diffview = true
-                diffview_open = false
-                diffviewFileHistory_open = false
-            end
-        end
-    end
-    -- If no Diffview window is closed, perform the default 'q' action.
-    if not closed_diffview then
-        vim.api.nvim_feedkeys("q", "n", false)
-    end
-end)
+-- map("n", "q", function()
+--     local closed_diffview = false
+--     -- Traverse all windows
+--     for _, win in ipairs(vim.api.nvim_list_wins()) do
+--         -- check if the window is a Diffview window
+--         local ok, buf = pcall(vim.api.nvim_win_get_buf, win)
+--         if ok then
+--             local cur_buf_type = vim.bo[buf].filetype
+--             if cur_buf_type == "DiffviewFiles" or cur_buf_type == "DiffviewFileHistory" then
+--                 vim.api.nvim_win_call(win, function()
+--                     vim.cmd("DiffviewClose")
+--                 end)
+--                 closed_diffview = true
+--                 diffview_open = false
+--                 diffviewFileHistory_open = false
+--             end
+--         end
+--     end
+--     -- If no Diffview window is closed, perform the default 'q' action.
+--     if not closed_diffview then
+--         vim.api.nvim_feedkeys("q", "n", false) -- WARN: This may trigger a recursive call.
+--     end
+-- end)
 
 -- lazygit
 -- if vim.fn.executable("lazygit") == 1 then

@@ -12,6 +12,7 @@ vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
 -- Set expandtab = false when opening Makefile
 vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("makefile-tabs"),
     pattern = { "make", "mk" },
     callback = function()
         -- only affect the current buffer
@@ -23,6 +24,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Treat "*.jsp" files as HTML files.
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    group = newGroup("jsp-as-html"),
     pattern = { "*.jsp" },
     callback = function()
         vim.bo.filetype = "html"
@@ -32,6 +34,7 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 ------------------ Neo-tree ------------------
 
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "VimResume" }, {
+    group = newGroup("neo tree auto refresh"),
     pattern = "*",
     callback = utils.refresh_neo_tree_if_git,
     desc = "Auto refresh neo-tree when git status changed",
@@ -41,6 +44,7 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "VimResume" }, {
 
 ------------------ Avante------------------
 vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("avante custom highlights with sonokai"),
     pattern = "Avante",
     callback = function()
         if vim.g.colors_name ~= "sonokai" then
@@ -56,9 +60,8 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-local group = vim.api.nvim_create_augroup("AvanteAutoToggle", { clear = true })
 vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = group,
+    group = newGroup("avante-auto-toggle"),
     callback = function(args)
         local ft = vim.bo[args.buf].filetype
 
@@ -73,16 +76,19 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 
 ------------------ Neovide ------------------
 vim.api.nvim_create_autocmd("ModeChanged", {
+    group = newGroup("neovide-cursor-effects"),
     pattern = "*",
     callback = function()
-        if vim.fn.mode() == "i" then
-            vim.g.neovide_cursor_animation_length = 0.0
-            vim.g.neovide_cursor_vfx_mode = "" -- Disable particle effects
-            vim.g.neovide_cursor_trail_size = 0 -- Trail length
-        else
-            vim.g.neovide_cursor_animation_length = 0.15 -- Cursor movement animation speed
-            vim.g.neovide_cursor_vfx_mode = "pixiedust" -- Particle effect mode
-            vim.g.neovide_cursor_trail_size = 0.2 -- Trail length
+        if vim.g.neovide then
+            if vim.fn.mode() == "i" then
+                vim.g.neovide_cursor_animation_length = 0.0
+                vim.g.neovide_cursor_vfx_mode = "" -- Disable particle effects
+                vim.g.neovide_cursor_trail_size = 0 -- Trail length
+            else
+                vim.g.neovide_cursor_animation_length = 0.15 -- Cursor movement animation speed
+                vim.g.neovide_cursor_vfx_mode = "pixiedust" -- Particle effect mode
+                vim.g.neovide_cursor_trail_size = 0.2 -- Trail length
+            end
         end
     end,
 })
@@ -91,6 +97,7 @@ vim.api.nvim_create_autocmd("ModeChanged", {
 
 ------------------ Outline ------------------
 vim.api.nvim_create_autocmd({ "WinEnter", "VimResume" }, {
+    group = newGroup("compatible with avante & outline"),
     pattern = "*",
     callback = function(args)
         if vim.bo.filetype == "Outline" and utils.has_avante_window() then
@@ -316,5 +323,31 @@ vim.api.nvim_create_autocmd("FileType", {
     pattern = { "*" },
     callback = function()
         vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("close dap-float with q"),
+    pattern = "dap-float",
+    desc = "Add 'q' to close dap-float windows",
+    callback = function(args)
+        vim.keymap.set("n", "q", "<Cmd>close<CR>", {
+            buffer = args.buf, -- only bind to the buffer that triggered the event
+            silent = true,
+            noremap = true,
+            desc = "Close DAP float window",
+        })
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = newGroup("set git diff view state"),
+    pattern = { "DiffviewFiles", "DiffviewFileHistory" },
+    callback = function(args)
+        if "DiffviewFiles" == vim.bo[args.buf].filetype then
+            utils.set_diffview_open(true)
+        elseif "DiffviewFileHistory" == vim.bo[args.buf].filetype then
+            utils.set_diffviewFileHistory_open(true)
+        end
     end,
 })
