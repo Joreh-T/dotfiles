@@ -607,6 +607,9 @@ return {
                     "help",
                     "terminal",
                     "git",
+                    "fzf",
+                    "yazi",
+                    "bookmark"
                 },
             },
             outline_window = {
