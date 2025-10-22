@@ -43,7 +43,7 @@ end
 vim.g.autoformat = false
 vim.o.wrap = true
 
-vim.g.snacks_animate = false -- Temporarily disable animation, which causes cursor anomalies in Visual mode when selecting downward
+-- vim.g.snacks_animate = false -- Temporarily disable animation, which causes cursor anomalies in Visual mode when selecting downward
 ---------------------------------------------------------------------
 ---
 vim.o.virtualedit = "onemore" -- Set virtualedit, cursor won't default to line end when moving up/down
