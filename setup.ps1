@@ -4,7 +4,7 @@ $DotfilesDir = "$HOME\dotfiles"
 # Mapping: source -> destination
 $Links = @{
     "$DotfilesDir\nvim"       = "$HOME\AppData\Local\nvim"
-    "$DotfilesDir\yazi"       = "$HOME\AppData\Local\yazi"
+    "$DotfilesDir\yazi"       = "$HOME\AppData\Roaming\yazi\config"
     "$DotfilesDir\vim\.vimrc" = "$HOME\.vimrc"
     "$DotfilesDir\wezterm"    = "$HOME\.config\wezterm"
 }
