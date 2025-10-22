@@ -509,113 +509,109 @@ function M.get_focused_window_col_scaled(factor)
 end
 
 function M.set_welcome_buffer(buf)
-    if vim.fn.argc() == 1 then
-        local stats = vim.uv.fs_stat(vim.fn.argv(0))
-        if stats and stats.type == "directory" then
-            local ver = vim.version()
-            local version = string.format("%s.%s.%s", ver.major, ver.minor, ver.patch)
-            local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
-            local date = os.date("%Y-%m-%d %H:%M")
-            buf = buf or vim.api.nvim_get_current_buf()
+    local ver = vim.version()
+    local version = string.format("%s.%s.%s", ver.major, ver.minor, ver.patch)
+    local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+    local date = os.date("%Y-%m-%d %H:%M")
+    buf = buf or vim.api.nvim_get_current_buf()
 
-            local buf_info = {
-                filetype = vim.bo[buf].filetype,
-                buftype = vim.bo[buf].buftype,
-            }
+    local buf_info = {
+        filetype = vim.bo[buf].filetype,
+        buftype = vim.bo[buf].buftype,
+        filename = vim.api.nvim_buf_get_name(buf),
+    }
 
-            if buf_info.filetype ~= "" or buf_info.buftype ~= "" then
-                return
-            end
+    if buf_info.filetype ~= "" or buf_info.buftype ~= "" or (buf_info.filename and buf_info.filename:match("lsp.log")) then
+        return
+    end
 
-            -- Store original window options
-            local original_wo = {
-                list = vim.wo.list,
-                number = vim.wo.number,
-                relativenumber = vim.wo.relativenumber,
-            }
+    -- Store original window options
+    local original_wo = {
+        list = vim.wo.list,
+        number = vim.wo.number,
+        relativenumber = vim.wo.relativenumber,
+    }
 
-            -- General information (centered)
-            local info_lines = {
-                string.format("✨  Welcome to Joreh's Neovim! 🧮 Enjoy your fresh thinking! 🚀"),
-                "",
-                string.format("✌️Nvim V%s", version),
-                "",
-                string.format("📍Working dir: %s", cwd),
-                "",
-                string.format("📅 %s", date),
-                "",
-                "",
-            }
+    -- General information (centered)
+    local info_lines = {
+        string.format("✨  Welcome to Joreh's Neovim! 🧮 Enjoy your fresh thinking! 🚀"),
+        "",
+        string.format("✌️Nvim V%s", version),
+        "",
+        string.format("📍Working dir: %s", cwd),
+        "",
+        string.format("📅 %s", date),
+        "",
+        "",
+    }
 
-            -- Shortcut information (left-aligned to first line start)
-            local shortcut_lines = {
-                "  Quick Start 👇:",
-                "    📂 <Space>e     ➡️   Open File Explorer",
-                "    🔎 <Space>ff    ➡️   Find File",
-                "    🔄 <Space>qs    ➡️   Restore The Last Session",
-                "    ❌ <Space>qq    ➡️   Exit Neovim",
-            }
+    -- Shortcut information (left-aligned to first line start)
+    local shortcut_lines = {
+        "  Quick Start 👇:",
+        "    📂 <Space>e     ➡️   Open File Explorer",
+        "    🔎 <Space>ff    ➡️   Find File",
+        "    🔄 <Space>qs    ➡️   Restore The Last Session",
+        "    ❌ <Space>qq    ➡️   Exit Neovim",
+    }
 
-            local win_width = vim.api.nvim_win_get_width(0)
-            local win_height = vim.api.nvim_win_get_height(0)
+    local win_width = vim.api.nvim_win_get_width(0)
+    local win_height = vim.api.nvim_win_get_height(0)
 
-            -- Calculate padding for first line
-            local first_line = info_lines[1]
-            local first_pad = math.floor((win_width - vim.fn.strdisplaywidth(first_line)) / 2)
+    -- Calculate padding for first line
+    local first_line = info_lines[1]
+    local first_pad = math.floor((win_width - vim.fn.strdisplaywidth(first_line)) / 2)
 
-            -- Center general information
-            for i, line in ipairs(info_lines) do
-                if line ~= "" then
-                    local pad = math.floor((win_width - vim.fn.strdisplaywidth(line)) / 2)
-                    info_lines[i] = string.rep(" ", pad) .. line
-                end
-            end
-
-            -- Left-align shortcut information to first line start position
-            for i, line in ipairs(shortcut_lines) do
-                shortcut_lines[i] = string.rep(" ", first_pad) .. line
-            end
-
-            -- Combine both sets of information
-            local message = vim.list_extend(info_lines, shortcut_lines)
-
-            -- Add top padding for vertical centering
-            local top_padding = math.floor((win_height - #message) / 2)
-            for _ = 1, top_padding do
-                table.insert(message, 1, "")
-            end
-
-            -- Write to buffer
-            vim.api.nvim_buf_set_lines(buf, 0, -1, false, message)
-
-            -- Set buffer/window options
-            vim.bo[buf].modified = false -- Do not mark as modified
-            vim.bo[buf].buftype = "nofile" -- Non-file buffer
-            vim.bo[buf].bufhidden = "wipe" -- Auto delete when closing window
-            vim.bo[buf].swapfile = false -- Do not generate swapfile
-            vim.bo[buf].modifiable = false -- Not modifiable
-            vim.bo[buf].readonly = true -- Read-only
-            vim.wo.list = false -- Do not display invisible characters
-            vim.wo.number = false -- Turn off line numbers
-            vim.wo.relativenumber = false -- Turn off relative line numbers
-
-            -- Create an autocommand to restore window options when the buffer is wiped
-            vim.api.nvim_create_autocmd("BufWipeout", {
-                buffer = buf,
-                once = true,
-                callback = function()
-                    -- The window that was displaying the welcome buffer is likely the current one.
-                    -- We need to check if it's still valid before restoring options.
-                    local current_win = vim.api.nvim_get_current_win()
-                    if vim.api.nvim_win_is_valid(current_win) then
-                        vim.wo.list = original_wo.list
-                        vim.wo.number = original_wo.number
-                        vim.wo.relativenumber = original_wo.relativenumber
-                    end
-                end,
-            })
+    -- Center general information
+    for i, line in ipairs(info_lines) do
+        if line ~= "" then
+            local pad = math.floor((win_width - vim.fn.strdisplaywidth(line)) / 2)
+            info_lines[i] = string.rep(" ", pad) .. line
         end
     end
+
+    -- Left-align shortcut information to first line start position
+    for i, line in ipairs(shortcut_lines) do
+        shortcut_lines[i] = string.rep(" ", first_pad) .. line
+    end
+
+    -- Combine both sets of information
+    local message = vim.list_extend(info_lines, shortcut_lines)
+
+    -- Add top padding for vertical centering
+    local top_padding = math.floor((win_height - #message) / 2)
+    for _ = 1, top_padding do
+        table.insert(message, 1, "")
+    end
+
+    -- Write to buffer
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, message)
+
+    -- Set buffer/window options
+    vim.bo[buf].modified = false -- Do not mark as modified
+    vim.bo[buf].buftype = "nofile" -- Non-file buffer
+    vim.bo[buf].bufhidden = "wipe" -- Auto delete when closing window
+    vim.bo[buf].swapfile = false -- Do not generate swapfile
+    vim.bo[buf].modifiable = false -- Not modifiable
+    vim.bo[buf].readonly = true -- Read-only
+    vim.wo.list = false -- Do not display invisible characters
+    vim.wo.number = false -- Turn off line numbers
+    vim.wo.relativenumber = false -- Turn off relative line numbers
+
+    -- Create an autocommand to restore window options when the buffer is wiped
+    vim.api.nvim_create_autocmd("BufWipeout", {
+        buffer = buf,
+        once = true,
+        callback = function()
+            -- The window that was displaying the welcome buffer is likely the current one.
+            -- We need to check if it's still valid before restoring options.
+            local current_win = vim.api.nvim_get_current_win()
+            if vim.api.nvim_win_is_valid(current_win) then
+                vim.wo.list = original_wo.list
+                vim.wo.number = original_wo.number
+                vim.wo.relativenumber = original_wo.relativenumber
+            end
+        end,
+    })
 end
 
 function M.has_yazi()

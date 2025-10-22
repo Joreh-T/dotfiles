@@ -136,6 +136,17 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     pattern = "*",
     desc = "Joreh's Welcome Buffer",
     callback = function(args)
+        if vim.fn.argc() ~= 1 then
+            vim.api.nvim_del_autocmd(args.id)
+            return
+        end
+
+        local stats = vim.uv.fs_stat(vim.fn.argv(0))
+        if not stats or stats.type ~= "directory" then
+            vim.api.nvim_del_autocmd(args.id)
+            return
+        end
+
         local no_name_buf_id_neo_tree = 2
         if not utils.has_yazi() and no_name_buf_id_neo_tree == args.buf then
             vim.defer_fn(function()
