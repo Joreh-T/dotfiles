@@ -950,7 +950,7 @@ return {
             end
 
             require("bookmarks").setup({
-                vim.api.nvim_set_hl(0, "bookmarks_virt_text_hl", { fg = "#879FA7", bg = "#21242C" }),
+                vim.api.nvim_set_hl(0, "bookmarks_virt_text_hl", { fg = "#879FA7", bg = "#354157" }),
 
                 -- default keymap
                 keymap = {
@@ -973,7 +973,7 @@ return {
                 tags_ratio = 0.07, -- Bookmarks tags window ratio
                 fix_enable = false, -- If true, when saving the current file, if the bookmark line number of the current file changes, try to fix it.
 
-                virt_text = "", -- Show virt text at the end of bookmarked lines, if it is empty, use the description of bookmarks instead.
+                virt_text = "✨",
 
                 sign_icon = mark_icon, -- if it is not empty, show icon in signColumn.
 

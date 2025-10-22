@@ -314,7 +314,7 @@ return {
     },
 
     {
-        "folke/edgy.nvim",
+        "Joreh-T/edgy.nvim",
         event = "VeryLazy",
         init = function()
             vim.opt.laststatus = 3
