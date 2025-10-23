@@ -303,6 +303,13 @@ return {
                         row = cmdline_pos.row + 3,
                     },
                 },
+                confirm = {
+                    backend = "popup",
+                    position = {
+                        row = cmdline_pos.row,
+                        -- col = "50%",
+                    },
+                },
             }
         end,
     },
@@ -609,7 +616,7 @@ return {
                     "git",
                     "fzf",
                     "yazi",
-                    "bookmark"
+                    "bookmark",
                 },
             },
             outline_window = {
@@ -1098,7 +1105,7 @@ return {
     },
 
     {
-        "kawre/leetcode.nvim",
+        "Joreh-T/leetcode.nvim",
         lazy = leet_arg ~= vim.fn.argv(0, -1),
         cmd = "Leet",
         dependencies = {
@@ -1231,6 +1238,41 @@ return {
                         local found = vim.fn.search("Solution", "w")
                         if found == 0 then
                             vim.cmd("normal! G")
+                        end
+                    end,
+                },
+
+                ["submit"] = {
+                    function(question, buffer, status_msg, success)
+                        if success then
+                            local current_file_path = question.file:absolute()
+                            if not current_file_path or current_file_path == "" then
+                                print("Current file path not found, skipping file movement.")
+                                return
+                            end
+                            local solved_dir = vim.fn.stdpath("data") .. "/leetcode/solved"
+                            vim.fn.mkdir(solved_dir, "p") -- Ensure the directory exists
+
+                            -- Get the filename (e.g., TwoSum.cpp)
+                            local file_name = vim.fn.fnamemodify(current_file_path, ":t")
+                            local new_file_path = solved_dir .. "/" .. file_name
+
+                            -- Prompt user to confirm moving the file
+                            -- vim.fn.confirm returns 1 for the first option, 2 for the second
+                            vim.defer_fn(function()
+                                local choice =
+                                    vim.fn.confirm("Submission successful! Move this file to the solved directory?", "&Yes\n&No", 1)
+
+                                if choice == 1 then -- User chose "Yes"
+                                    -- vim.fn.rename returns 0 on success, -1 on failure
+                                    local ok, err = pcall(vim.fn.rename, current_file_path, new_file_path)
+                                    if ok == 0 then
+                                        print("File successfully moved to: " .. new_file_path)
+                                    else
+                                        print("Failed to move file: " .. err)
+                                    end
+                                end
+                            end, 1000)
                         end
                     end,
                 },
