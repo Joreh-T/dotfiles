@@ -362,3 +362,17 @@ vim.api.nvim_create_autocmd("FileType", {
         end
     end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "Outline",
+    group = newGroup("outline custom highlights with sonokai"),
+    callback = function()
+        if vim.g.colors_name ~= "sonokai" then
+            return
+        end
+
+        vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
+        -- vim.api.nvim_set_hl(0, "OutlineBackground", {link = "InlayHints"})
+        vim.wo.winhl = "Normal:OutlineBackground"
+    end,
+})

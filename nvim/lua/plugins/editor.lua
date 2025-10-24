@@ -1,6 +1,21 @@
 local utils = require("config.utils")
 local leet_arg = "leetcode"
 
+local outline_refresh_blacklist_exact = {
+    "neo-tree",
+    "lazygit",
+}
+local outline_refresh_blacklist_pattern = {
+    "Avante",
+    "help",
+    "terminal",
+    "git",
+    "fzf",
+    "yazi",
+    "bookmark",
+    "dashboard"
+}
+
 return {
     -- Auto switch input method depends on Nvim's edit mode.
     {
@@ -605,19 +620,9 @@ return {
                 down_and_jump = "<down>",
             },
             outline_items = {
-                update_on_buf_enter_blacklist_exact = {
-                    "neo-tree",
-                    "lazygit",
-                },
-                update_on_buf_enter_blacklist_pattern = {
-                    "^Avante",
-                    "help",
-                    "terminal",
-                    "git",
-                    "fzf",
-                    "yazi",
-                    "bookmark",
-                },
+                show_symbol_details = false,
+                update_on_buf_enter_blacklist_exact = outline_refresh_blacklist_exact,
+                update_on_buf_enter_blacklist_pattern = outline_refresh_blacklist_pattern,
             },
             outline_window = {
                 position = "right",
@@ -633,7 +638,7 @@ return {
                 ---@type boolean|string?
                 show_cursorline = true,
                 hide_cursor = false,
-                winhl = "",
+                winhl = "Normal:OutlineBackground",
                 jump_highlight_duration = 400,
                 center_on_jump = true,
             },
@@ -691,33 +696,51 @@ return {
                 },
             },
         },
-        -- config = function(_, opts)
-        --     require("outline").setup(opts)
-        --
-        --     -- Dynamic width adjustment logic
-        --     vim.api.nvim_create_autocmd("VimResized", {
-        --         callback = function()
-        --             local outline_buf = nil
-        --
-        --             for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        --                 if vim.bo[buf].filetype == "Outline" then
-        --                     outline_buf = buf
-        --                     break
-        --                 end
-        --             end
-        --
-        --             if outline_buf then
-        --                 for _, win in ipairs(vim.api.nvim_list_wins()) do
-        --                     if vim.api.nvim_win_get_buf(win) == outline_buf then
-        --                         local total_width = vim.o.columns
-        --                         local new_width = math.max(18, math.floor(total_width * 0.18))
-        --                         vim.api.nvim_win_set_width(win, new_width)
-        --                     end
-        --                 end
-        --             end
-        --         end,
-        --     })
-        -- end,
+
+        init = function()
+            vim.api.nvim_create_autocmd("BufEnter", {
+                group = vim.api.nvim_create_augroup("Outline_start", { clear = true }),
+                desc = "Auto open Outline",
+                callback = function(args)
+                    -- if in cmd mode
+                    if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
+                        return
+                    end
+
+                    local bufnr = args.buf
+                    if not vim.api.nvim_buf_is_valid(bufnr) then
+                        return
+                    end
+
+                    local buftype = vim.bo[bufnr].buftype
+                    if not (buftype == "" or buftype == "acwrite") then
+                        return
+                    end
+
+                    if vim.api.nvim_buf_get_name(bufnr) == "" then
+                        return
+                    end
+
+                    if utils.has_target_ft_window(outline_refresh_blacklist_exact) then
+                        return
+                    end
+
+                    if utils.has_target_ft_window(outline_refresh_blacklist_pattern, true) then
+                        return
+                    end
+
+                    if utils.has_target_ft_window("Outline") then
+                        return
+                    end
+
+                    vim.cmd("Outline")
+                    vim.api.nvim_del_autocmd(args.id)
+                    vim.defer_fn(function()
+                        utils.focus_largest_window()
+                    end, 20)
+                end,
+            })
+        end,
     },
 
     {

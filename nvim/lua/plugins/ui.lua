@@ -1,4 +1,6 @@
 -- if true then return {} end
+local utils = require("config.utils")
+
 local screen_width = vim.o.columns
 local center_indent = math.floor((screen_width - 78) / 2) -- Try to center the snacks header as much as possible
 
@@ -255,6 +257,12 @@ return {
                     {
                         filetype = "snacks_layout_box",
                     },
+                    {
+                        filetype = "Outline",
+                        text = "🎯 Outline",
+                        highlight = "Normal",
+                        text_align = "left",
+                    },
                 },
                 max_name_length = 30,
                 hover = {
@@ -420,6 +428,9 @@ return {
             local outline_spec = {
                 title = "Outline",
                 ft = "Outline",
+                wo = {
+                    winbar = false,
+                },
                 size = {
                     width = math.max(base_opts.options.right.size, math.floor(vim.o.columns * 0.17)),
                     height = 0.45,
@@ -436,7 +447,11 @@ return {
             end
 
             if LazyVim.has("outline.nvim") then
-                table.insert(right, outline_spec)
+                if utils.has_yazi() then
+                    table.insert(left, outline_spec)
+                else
+                    table.insert(right, outline_spec)
+                end
             end
 
             if vim.tbl_isempty(left) then

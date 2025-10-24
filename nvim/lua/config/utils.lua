@@ -192,26 +192,38 @@ function M.close_terminal_and_focus_largest()
     M.focus_largest_window()
 end
 
-function M.has_target_ft_window(filetype_pattern, use_pattern_regex)
+function M.has_target_ft_window(filetype_patterns, use_pattern_regex)
     use_pattern_regex = use_pattern_regex or false
+
+    -- Check if the input is a table; if not, wrap it into a table.
+    local patterns_to_check = {}
+    if type(filetype_patterns) == "table" then
+        patterns_to_check = filetype_patterns
+    elseif type(filetype_patterns) == "string" then
+        patterns_to_check = { filetype_patterns }
+    else
+        return false
+    end
+
     for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
         local buf = vim.api.nvim_win_get_buf(win)
         local ft = vim.bo[buf].filetype or ""
+
         if ft ~= "" then
-            -- Check if filetype matches the given pattern
-            if use_pattern_regex then
-                -- pattern matching
-                if ft:match(filetype_pattern) then
-                    return true
-                end
-            else
-                -- whole string matching
-                if ft == filetype_pattern then
-                    return true
+            for _, pattern in ipairs(patterns_to_check) do
+                if use_pattern_regex then
+                    if ft:match(pattern) then
+                        return true
+                    end
+                else
+                    if ft == pattern then
+                        return true
+                    end
                 end
             end
         end
     end
+
     return false
 end
 
