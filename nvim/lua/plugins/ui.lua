@@ -227,7 +227,8 @@ return {
                     local bufname = vim.api.nvim_buf_get_name(buf_number)
 
                     -- 1. Filter out buffers with file type 'netrw'
-                    if vim.bo[buf_number].filetype == "netrw" then
+                    local filetype = vim.bo[buf_number].filetype
+                    if  filetype == "netrw" or filetype == "notUse" or filetype == "welcome" then
                         return false
                     end
 

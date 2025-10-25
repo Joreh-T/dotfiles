@@ -601,6 +601,7 @@ function M.set_welcome_buffer(buf)
     -- Set buffer/window options
     vim.bo[buf].modified = false -- Do not mark as modified
     vim.bo[buf].buftype = "nofile" -- Non-file buffer
+    vim.bo[buf].filetype = "welcome" -- Set filetype to welcome
     vim.bo[buf].bufhidden = "wipe" -- Auto delete when closing window
     vim.bo[buf].swapfile = false -- Do not generate swapfile
     vim.bo[buf].modifiable = false -- Not modifiable

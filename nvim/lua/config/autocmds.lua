@@ -376,3 +376,46 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.wo.winhl = "Normal:OutlineBackground"
     end,
 })
+
+vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
+    group = newGroup("setup-notUse-buffer"),
+    callback = function(args)
+        local filetype = vim.bo[args.buf].filetype
+        local is_swapfile = vim.bo[args.buf].swapfile
+        local bufname = vim.api.nvim_buf_get_name(args.buf)
+
+        local bufs = vim.fn.getbufinfo({ buflisted = 1 })
+        local count = #bufs
+
+        -- vim.notify("buf count: " .. count .. ", filetype: " .. filetype, vim.log.levels.DEBUG, { title = "Welcome Buffer Cleanup" })
+        local is_ignored_ft = { "welcome", "yazi", "dashboard" }
+
+        if "" == filetype or "" == bufname or not is_swapfile then
+            return
+        end
+
+        for _, t in ipairs(is_ignored_ft) do
+            if filetype:match(t) then
+                return
+            end
+        end
+
+        if count < 3 then
+            local buf = vim.api.nvim_create_buf(true, false)
+            local message = {
+                "This buffer cannot be used.",
+            }
+            vim.api.nvim_buf_set_name(buf, "notUse")
+            vim.api.nvim_buf_set_lines(buf, 0, -1, false, message)
+            vim.bo[buf].buftype = "nofile"
+            vim.bo[buf].bufhidden = "hide"
+            vim.bo[buf].swapfile = false
+            vim.bo[buf].modifiable = false
+            vim.bo[buf].modified = false
+            vim.bo[buf].filetype = "notUse"
+            vim.bo[buf].readonly = true
+            vim.api.nvim_del_autocmd(args.id)
+        end
+    end,
+})
+

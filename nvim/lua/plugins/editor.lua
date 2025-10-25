@@ -625,7 +625,7 @@ return {
                 update_on_buf_enter_blacklist_pattern = outline_refresh_blacklist_pattern,
             },
             outline_window = {
-                position = "right",
+                position = utils.has_yazi() and "left" or "right",
                 split_command = nil,
                 width = 18,
                 -- relative_width = true,
