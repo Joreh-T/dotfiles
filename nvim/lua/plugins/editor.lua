@@ -737,7 +737,7 @@ return {
                     vim.api.nvim_del_autocmd(args.id)
                     vim.defer_fn(function()
                         utils.focus_largest_window()
-                    end, 20)
+                    end, 50)
                 end,
             })
         end,
