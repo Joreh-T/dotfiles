@@ -4,6 +4,7 @@ local leet_arg = "leetcode"
 local outline_refresh_blacklist_exact = {
     "neo-tree",
     "lazygit",
+    "snacks_notif",
 }
 local outline_refresh_blacklist_pattern = {
     "Avante",

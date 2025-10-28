@@ -756,7 +756,13 @@ function M.get_restore_session_win_count()
 end
 
 function M.get_projects()
-    local session_path = vim.fn.stdpath("data") .. "/sessions/"
+    local session_path = ""
+    if M.is_windows() then
+        session_path = vim.fn.stdpath("data") .. "/sessions/"
+    else
+        session_path = vim.fn.stdpath("state") .. "/sessions/"
+    end
+
     local session_files = vim.fn.glob(session_path .. "*.vim", true, true)
 
     if vim.tbl_isempty(session_files) then
@@ -786,7 +792,9 @@ function M.get_projects()
             project_path = project_path:gsub("%%", "\\")
         else
             project_path = project_path:gsub("%%", "/")
-            if project_path:sub(1, 1) ~= "/" then
+            if project_path:sub(1, 1) == "~" then
+                project_path = vim.fn.expand(project_path)
+            elseif project_path:sub(1, 1) ~= "/" then
                 project_path = "/" .. project_path
             end
         end
