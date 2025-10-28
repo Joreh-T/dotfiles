@@ -99,7 +99,7 @@ return {
                             end,
                         },
                         -- { icon = " ", key = "s", desc = "Select Session", action = "<leader>qS" },
-                        { icon = " ", key = "s", desc = "Select Session", action = ":lua require('persistence').select()" },
+                        { icon = " ", key = "m", desc = "More Projects", action = ":lua require('persistence').select()" },
                         { icon = "󰛡 ", key = "p", desc = "Plugins", action = ":Lazy" },
                         -- { icon = " ", key = "x", desc = "Extras", action = ":LazyExtras" },
                         { icon = " ", key = "q", desc = "Quit", action = ":qa" },
@@ -140,7 +140,16 @@ return {
                         indent = 2,
                         padding = 1,
                     },
-                    { pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+                    {
+                        pane = 2,
+                        icon = " ",
+                        title = "Projects",
+                        section = "projects",
+                        indent = 2,
+                        padding = 1,
+                        dirs = utils.get_projects(),
+                        limit = 5,
+                    },
                     -- {
                     --   pane = 2,
                     --   icon = " ",
@@ -228,7 +237,7 @@ return {
 
                     -- 1. Filter out buffers with file type 'netrw'
                     local filetype = vim.bo[buf_number].filetype
-                    if  filetype == "netrw" or filetype == "notUse" or filetype == "welcome" then
+                    if filetype == "netrw" or filetype == "notUse" or filetype == "welcome" then
                         return false
                     end
 

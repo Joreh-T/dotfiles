@@ -62,11 +62,4 @@ local lazy_config = {
     },
 }
 
-if utils.is_windows() then
-    lazy_config.rocks = {
-        enabled = true,
-        hererocks = false,
-    }
-end
-
 require("lazy").setup(lazy_config)

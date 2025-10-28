@@ -363,20 +363,6 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "Outline",
-    group = newGroup("outline custom highlights with sonokai"),
-    callback = function()
-        if vim.g.colors_name ~= "sonokai" then
-            return
-        end
-
-        vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
-        -- vim.api.nvim_set_hl(0, "OutlineBackground", {link = "InlayHints"})
-        vim.wo.winhl = "Normal:OutlineBackground"
-    end,
-})
-
 vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     group = newGroup("setup-notUse-buffer"),
     callback = function(args)
@@ -417,5 +403,16 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
         vim.bo[buf].filetype = "notUse"
         vim.bo[buf].readonly = true
         vim.api.nvim_del_autocmd(args.id)
+    end,
+})
+
+vim.api.nvim_create_autocmd({ "User" }, {
+    pattern = "PersistenceLoadPost",
+    group = newGroup("capture-restore-session-win-count"),
+    once = true,
+    callback = function()
+        local win_count = #vim.api.nvim_list_wins()
+        -- vim.notify("Restored window count: " .. win_count, vim.log.levels.INFO, { title = "Persistence" })
+        utils.set_restore_session_win_count(win_count)
     end,
 })

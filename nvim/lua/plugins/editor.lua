@@ -13,7 +13,7 @@ local outline_refresh_blacklist_pattern = {
     "fzf",
     "yazi",
     "bookmark",
-    "dashboard"
+    "dashboard",
 }
 
 return {
@@ -702,42 +702,50 @@ return {
                 group = vim.api.nvim_create_augroup("Outline_start", { clear = true }),
                 desc = "Auto open Outline",
                 callback = function(args)
-                    -- if in cmd mode
-                    if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
-                        return
-                    end
+                    vim.schedule(function()
+                        vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
+                        if utils.get_restore_session_win_count() > 1 then
+                            return
+                        end
 
-                    local bufnr = args.buf
-                    if not vim.api.nvim_buf_is_valid(bufnr) then
-                        return
-                    end
+                        -- if in cmd mode
+                        if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
+                            return
+                        end
 
-                    local buftype = vim.bo[bufnr].buftype
-                    if not (buftype == "" or buftype == "acwrite") then
-                        return
-                    end
+                        local bufnr = args.buf
+                        if not vim.api.nvim_buf_is_valid(bufnr) then
+                            return
+                        end
 
-                    if vim.api.nvim_buf_get_name(bufnr) == "" then
-                        return
-                    end
+                        local buftype = vim.bo[bufnr].buftype
+                        if not (buftype == "" or buftype == "acwrite") then
+                            return
+                        end
 
-                    if utils.has_target_ft_window(outline_refresh_blacklist_exact) then
-                        return
-                    end
+                        if vim.api.nvim_buf_get_name(bufnr) == "" then
+                            return
+                        end
 
-                    if utils.has_target_ft_window(outline_refresh_blacklist_pattern, true) then
-                        return
-                    end
+                        if utils.has_target_ft_window(outline_refresh_blacklist_exact) then
+                            return
+                        end
 
-                    if utils.has_target_ft_window("Outline") then
-                        return
-                    end
+                        if utils.has_target_ft_window(outline_refresh_blacklist_pattern, true) then
+                            return
+                        end
 
-                    vim.cmd("Outline")
-                    vim.api.nvim_del_autocmd(args.id)
-                    vim.defer_fn(function()
+                        if utils.has_target_ft_window("Outline") then
+                            vim.api.nvim_del_autocmd(args.id)
+                            return
+                        end
+
+                        vim.cmd("Outline")
+                        vim.api.nvim_del_autocmd(args.id)
+                        -- vim.defer_fn(function()
                         utils.focus_largest_window()
-                    end, 50)
+                        -- end, 0)
+                    end)
                 end,
             })
         end,
@@ -1003,7 +1011,7 @@ return {
                 tags_ratio = 0.07, -- Bookmarks tags window ratio
                 fix_enable = false, -- If true, when saving the current file, if the bookmark line number of the current file changes, try to fix it.
 
-                virt_text = "✨",
+                virt_text = "🌟",
 
                 sign_icon = mark_icon, -- if it is not empty, show icon in signColumn.
 

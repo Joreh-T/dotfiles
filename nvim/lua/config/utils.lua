@@ -746,6 +746,67 @@ function M.toggle_history_view()
     end
 end
 
+local restore_session_win_count = -1
+function M.set_restore_session_win_count(count)
+    restore_session_win_count = count
+end
+
+function M.get_restore_session_win_count()
+    return restore_session_win_count
+end
+
+function M.get_projects()
+    local session_path = vim.fn.stdpath("data") .. "/sessions/"
+    local session_files = vim.fn.glob(session_path .. "*.vim", true, true)
+
+    if vim.tbl_isempty(session_files) then
+        return {}
+    end
+
+    local files_with_stats = {}
+    for _, file in ipairs(session_files) do
+        local stat = vim.loop.fs_stat(file)
+        if stat then
+            table.insert(files_with_stats, { path = file, mtime = stat.mtime.sec })
+        end
+    end
+
+    -- sort by mtime descending
+    table.sort(files_with_stats, function(a, b)
+        return a.mtime > b.mtime
+    end)
+
+    local projects = {}
+    for _, file_info in ipairs(files_with_stats) do
+        local session_file = file_info.path
+        local project_path = vim.fn.fnamemodify(session_file, ":t:r")
+
+        if M.is_windows() then
+            project_path = project_path:gsub("%%", ":\\", 1)
+            project_path = project_path:gsub("%%", "\\")
+        else
+            project_path = project_path:gsub("%%", "/")
+            if project_path:sub(1, 1) ~= "/" then
+                project_path = "/" .. project_path
+            end
+        end
+
+        -- Check the path validity and prevent adding the same item repeatedly.
+        if not project_path:match("\\\\") and vim.fn.isdirectory(project_path) == 1 then
+            if not vim.tbl_contains(projects, project_path) then
+                table.insert(projects, project_path)
+            end
+        end
+    end
+
+    local projects_count = #projects
+    if 0 == projects_count then
+        return nil
+    end
+    return projects
+end
+
+---------------------------- Custom Commands ----------------------------
 vim.api.nvim_create_user_command("BufferInfo", function(opts)
     local buf = vim.api.nvim_get_current_buf()
     local lines = {}
