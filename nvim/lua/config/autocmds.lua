@@ -130,7 +130,7 @@ vim.api.nvim_create_autocmd({ "WinEnter", "VimResume" }, {
 --         end
 --     end,
 -- })
-local welcome_del_flag = 0
+local welcome_set_flag = false
 vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     group = newGroup("welcome-tips"),
     pattern = "*",
@@ -159,8 +159,8 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
             end, 100)
         elseif utils.has_yazi() then
             utils.set_welcome_buffer(args.buf)
-            if 0 == welcome_del_flag then
-                welcome_del_flag = 1
+            if false == welcome_set_flag then
+                welcome_set_flag = true
                 -- The ID of the empty buffer that is last displayed in the window cannot be determined.
                 -- To display the prompt interface in all empty buffers, delay the deletion of this autocmd
                 vim.defer_fn(function()

@@ -704,48 +704,54 @@ return {
                 desc = "Auto open Outline",
                 callback = function(args)
                     -- vim.schedule(function()
-                        vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
-                        -- if utils.get_restore_session_win_count() > 1 then
-                        --     return
-                        -- end
+                    vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
 
-                        -- if in cmd mode
-                        if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
-                            return
-                        end
+                    local stats = vim.uv.fs_stat(vim.fn.argv(0))
+                    if stats and stats.type == "directory" then
+                        return
+                    end
 
-                        local bufnr = args.buf
-                        if not vim.api.nvim_buf_is_valid(bufnr) then
-                            return
-                        end
+                    -- if in cmd mode
+                    if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
+                        return
+                    end
 
-                        local buftype = vim.bo[bufnr].buftype
-                        if not (buftype == "" or buftype == "acwrite" or buftype == "nofile") then
-                            return
-                        end
+                    local bufnr = args.buf
+                    if not vim.api.nvim_buf_is_valid(bufnr) then
+                        return
+                    end
 
-                        if vim.api.nvim_buf_get_name(bufnr) == "" then
-                            return
-                        end
+                    local buftype = vim.bo[bufnr].buftype
+                    if not (buftype == "" or buftype == "acwrite" or buftype == "nofile") then
+                        return
+                    end
 
-                        if utils.has_target_ft_window(outline_refresh_blacklist_exact) then
-                            return
-                        end
+                    if vim.bo[bufnr].swapfile == false then
+                        return
+                    end
 
-                        if utils.has_target_ft_window(outline_refresh_blacklist_pattern, true) then
-                            return
-                        end
+                    if vim.api.nvim_buf_get_name(bufnr) == "" then
+                        return
+                    end
 
-                        if utils.has_target_ft_window("Outline") then
-                            vim.api.nvim_del_autocmd(args.id)
-                            return
-                        end
+                    if utils.has_target_ft_window(outline_refresh_blacklist_exact) then
+                        return
+                    end
 
-                        vim.cmd("Outline")
+                    if utils.has_target_ft_window(outline_refresh_blacklist_pattern, true) then
+                        return
+                    end
+
+                    if utils.has_target_ft_window({ "Outline", "welcome" }) then
                         vim.api.nvim_del_autocmd(args.id)
-                        -- vim.defer_fn(function()
-                            utils.focus_largest_window()
-                        -- end, 50)
+                        return
+                    end
+
+                    vim.cmd("Outline")
+                    vim.api.nvim_del_autocmd(args.id)
+                    vim.defer_fn(function()
+                        utils.focus_largest_window()
+                    end, 50)
                     -- end)
                 end,
             })
@@ -948,26 +954,6 @@ return {
             },
         },
         init = function()
-            -- vim.api.nvim_create_autocmd("BufEnter", {
-            --     group = vim.api.nvim_create_augroup("Yazi_start_directory", { clear = true }),
-            --     desc = "Start Yazi with directory and focus",
-            --     once = true,
-            --     callback = function()
-            --         if package.loaded["yazi"] then
-            --             return
-            --         end
-            --
-            --         if vim.fn.argc() == 1 then
-            --             local stats = vim.uv.fs_stat(vim.fn.argv(0))
-            --             if stats and stats.type == "directory" then
-            --                 vim.defer_fn(function()
-            --                     vim.cmd("Yazi")
-            --                 end, 50)
-            --             end
-            --         end
-            --     end,
-            -- })
-
             -- 👇 if you use `open_for_directories=true`, this is recommended
             -- mark netrw as loaded so it's not loaded at all.
             -- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
