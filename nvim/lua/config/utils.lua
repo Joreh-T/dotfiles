@@ -746,14 +746,14 @@ function M.toggle_history_view()
     end
 end
 
-local restore_session_win_count = -1
-function M.set_restore_session_win_count(count)
-    restore_session_win_count = count
-end
-
-function M.get_restore_session_win_count()
-    return restore_session_win_count
-end
+-- local restore_session_win_count = -1
+-- function M.set_restore_session_win_count(count)
+--     restore_session_win_count = count
+-- end
+--
+-- function M.get_restore_session_win_count()
+--     return restore_session_win_count
+-- end
 
 function M.get_projects()
     local session_path = ""

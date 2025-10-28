@@ -406,13 +406,13 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     end,
 })
 
-vim.api.nvim_create_autocmd({ "User" }, {
-    pattern = "PersistenceLoadPost",
-    group = newGroup("capture-restore-session-win-count"),
-    once = true,
-    callback = function()
-        local win_count = #vim.api.nvim_list_wins()
-        -- vim.notify("Restored window count: " .. win_count, vim.log.levels.INFO, { title = "Persistence" })
-        utils.set_restore_session_win_count(win_count)
-    end,
-})
+-- vim.api.nvim_create_autocmd({ "User" }, {
+--     pattern = "PersistenceLoadPost",
+--     group = newGroup("capture-restore-session-win-count"),
+--     once = true,
+--     callback = function()
+--         local win_count = #vim.api.nvim_list_wins()
+--         -- vim.notify("Restored window count: " .. win_count, vim.log.levels.INFO, { title = "Persistence" })
+--         utils.set_restore_session_win_count(win_count)
+--     end,
+-- })

@@ -699,15 +699,15 @@ return {
         },
 
         init = function()
-            vim.api.nvim_create_autocmd("BufEnter", {
+            vim.api.nvim_create_autocmd("BufWinEnter", {
                 group = vim.api.nvim_create_augroup("Outline_start", { clear = true }),
                 desc = "Auto open Outline",
                 callback = function(args)
-                    vim.schedule(function()
+                    -- vim.schedule(function()
                         vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
-                        if utils.get_restore_session_win_count() > 1 then
-                            return
-                        end
+                        -- if utils.get_restore_session_win_count() > 1 then
+                        --     return
+                        -- end
 
                         -- if in cmd mode
                         if vim.api.nvim_get_mode().mode:sub(1, 1) == "c" then
@@ -720,7 +720,7 @@ return {
                         end
 
                         local buftype = vim.bo[bufnr].buftype
-                        if not (buftype == "" or buftype == "acwrite") then
+                        if not (buftype == "" or buftype == "acwrite" or buftype == "nofile") then
                             return
                         end
 
@@ -744,9 +744,9 @@ return {
                         vim.cmd("Outline")
                         vim.api.nvim_del_autocmd(args.id)
                         -- vim.defer_fn(function()
-                        utils.focus_largest_window()
-                        -- end, 0)
-                    end)
+                            utils.focus_largest_window()
+                        -- end, 50)
+                    -- end)
                 end,
             })
         end,
