@@ -706,8 +706,9 @@ return {
                     -- vim.schedule(function()
                     vim.api.nvim_set_hl(0, "OutlineBackground", { fg = "#cfcfcf", bg = "#24272e" })
 
+                    local bufnr = args.buf
                     local stats = vim.uv.fs_stat(vim.fn.argv(0))
-                    if stats and stats.type == "directory" then
+                    if stats and stats.type == "directory" and "" == vim.bo[bufnr].filetype then
                         return
                     end
 
@@ -716,7 +717,6 @@ return {
                         return
                     end
 
-                    local bufnr = args.buf
                     if not vim.api.nvim_buf_is_valid(bufnr) then
                         return
                     end
