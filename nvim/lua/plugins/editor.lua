@@ -5,6 +5,7 @@ local outline_refresh_blacklist_exact = {
     "neo-tree",
     "lazygit",
     "snacks_notif",
+    "grug-far",
 }
 local outline_refresh_blacklist_pattern = {
     "Avante",

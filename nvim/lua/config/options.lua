@@ -1,13 +1,7 @@
--- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
--- Add any additional options here
---
+local utils = require("config.utils")
 
----------------------------------------------------------------------
 -- Set PowerShell as the default shell when Neovim starts on Windows
-local os = vim.loop.os_uname().sysname
-
-if os == "Windows_NT" then
+if utils.is_windows() then
     vim.o.shell = "powershell"
 end
 
@@ -28,8 +22,9 @@ vim.opt.jumpoptions = "stack"
 vim.opt.nrformats = "bin,hex,octal,alpha" -- Enable binary, hexadecimal, octal, and alphabetical number formats
 vim.opt.fileencodings = { "utf-8", "gbk", "gb2312",  "utf-16le", "big5", "euc-jp", "euc-kr", "latin1" }
 
+vim.g.maplocalleader = ';'
 ---------------------------------------------------------------------
-if not os == "Windows_NT" then
+if not utils.is_windows() then
     vim.g.python3_host_prog = "/usr/bin/python3"
 else
     vim.g.python3_host_prog = "python3"
