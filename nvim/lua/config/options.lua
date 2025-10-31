@@ -6,7 +6,8 @@ if utils.is_windows() then
 end
 
 vim.opt.list = true -- Show invisible characters
-vim.opt.listchars = { space = "·", tab = ">-", eol = "↲" }
+-- vim.opt.listchars = { space = "·", tab = ">-", eol = "↲" }
+vim.opt.listchars = { space = "·", tab = " ", eol = "󰌑" }
 vim.opt.tabstop = 4 -- Set tab width to 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4 -- Set auto-indent width to 4
