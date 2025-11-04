@@ -38,6 +38,11 @@ return {
             opts.keymaps.view["<leader>b"] = nil
             opts.keymaps.file_panel["<leader>b"] = nil
             opts.keymaps.file_history_panel["<leader>b"] = nil
+            opts.hooks = {
+                diff_buf_win_enter = function()
+                    utils.detach_lsp_in_current_tab_if_diff()
+                end,
+            }
 
             return opts
         end,

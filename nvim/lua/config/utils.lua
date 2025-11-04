@@ -814,6 +814,32 @@ function M.get_projects()
     return projects
 end
 
+local function detach_all_lsp_from_buf(bufnr)
+    for _, client in pairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+        vim.lsp.buf_detach_client(bufnr, client.id)
+    end
+end
+
+function M.detach_lsp_in_current_tab_if_diff()
+    if not M.has_target_ft_window("DiffviewFiles") then
+        return
+    end
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    local wins = vim.api.nvim_tabpage_list_wins(tabpage)
+    vim.defer_fn(function()
+        for _, win in ipairs(wins) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            local name = vim.api.nvim_buf_get_name(buf)
+
+            if name:match("diffview:") then
+                detach_all_lsp_from_buf(buf)
+                -- vim.notify("Detaching LSP from buffer " .. buf, vim.log.levels.INFO)
+            end
+        end
+    end, 100)
+    -- vim.notify("Detached LSP from all buffers in current tab (diff detected)", vim.log.levels.INFO)
+end
+
 ---------------------------- Custom Commands ----------------------------
 vim.api.nvim_create_user_command("BufferInfo", function(opts)
     local buf = vim.api.nvim_get_current_buf()
