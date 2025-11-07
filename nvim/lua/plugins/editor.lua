@@ -62,9 +62,10 @@ return {
         "ibhagwan/fzf-lua",
         -- event = "VeryLazy",
         keys = {
-            -- { "<leader>/", LazyVim.pick("live_grep", { root = false }), desc = "Grep (cwd)" },
-            { "<leader>/", LazyVim.pick("grep_project"), desc = "Grep (project)" },
+            { "<leader>/", LazyVim.pick("live_grep", { root = false }), desc = "Grep (cwd)" },
+            -- { "<leader>/", LazyVim.pick("grep_project"), desc = "Fuzzy search (project)" },
             { "<leader>sg", LazyVim.pick("live_grep", { root = false }), desc = "Grep (cwd)" },
+            { "<leader>sf", LazyVim.pick("grep_project", { root = false }), desc = "Fuzzy search (project)" },
             { "<leader>sG", LazyVim.pick("live_grep"), desc = "Grep (Root Dir)" },
             { "<leader>fF", LazyVim.pick("files"), desc = "Find Files (Root Dir)" },
             { "<leader>ff", LazyVim.pick("files", { root = false }), desc = "Find Files (cwd)" },
