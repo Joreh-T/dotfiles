@@ -710,6 +710,11 @@ return {
 
                     local bufnr = args.buf
                     local stats = vim.uv.fs_stat(vim.fn.argv(0))
+
+                    if vim.fn.argv(0) and "leetcode" == vim.fn.argv(0) then
+                        return
+                    end
+
                     if stats and stats.type == "directory" and "" == vim.bo[bufnr].filetype then
                         return
                     end
