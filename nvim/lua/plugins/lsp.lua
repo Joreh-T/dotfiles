@@ -13,6 +13,18 @@ return {
     },
 
     {
+        "mason-org/mason-lspconfig.nvim",
+        opts = {
+            -- add 'lsp', 'linter', 'formatter', 'debugger' etc categories which lazyVim extral doesn't support
+            ensure_installed = { "html", "cssls", "jsonls", "eslint" },
+        },
+        dependencies = {
+            { "mason-org/mason.nvim", opts = {} },
+            "neovim/nvim-lspconfig",
+        },
+    },
+
+    {
         "linux-cultist/venv-selector.nvim",
         branch = "main",
         cmd = "VenvSelect",
