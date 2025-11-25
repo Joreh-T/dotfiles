@@ -14,14 +14,14 @@ return {
 
     {
         "mason-org/mason-lspconfig.nvim",
-        opts = {
+        opts = function(_, opts)
             -- add 'lsp', 'linter', 'formatter', 'debugger' etc categories which lazyVim extral doesn't support
-            ensure_installed = { "html", "cssls", "jsonls", "eslint" },
-        },
-        dependencies = {
-            { "mason-org/mason.nvim", opts = {} },
-            "neovim/nvim-lspconfig",
-        },
+            opts.ensure_installed = { "html", "cssls", "jsonls", "eslint" }
+            -- opts.dependencies = {
+            --     { "mason-org/mason.nvim", opts = {} },
+            --     "neovim/nvim-lspconfig",
+            -- }
+        end,
     },
 
     {
