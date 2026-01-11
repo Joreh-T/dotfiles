@@ -28,7 +28,7 @@ local languages_parser = {
     "vimdoc",
     "xml",
     "yaml",
-    "verilog",
+    "systemverilog",
     "vhdl",
     "arduino",
     "latex",

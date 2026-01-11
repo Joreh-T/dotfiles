@@ -1309,6 +1309,7 @@ return {
                 toggle = { "q" },
                 confirm = { "<CR>" },
 
+                quit = "q",
                 reset_testcases = "r",
                 use_testcase = "U",
                 focus_testcases = "H",
