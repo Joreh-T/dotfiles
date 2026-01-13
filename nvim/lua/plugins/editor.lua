@@ -563,6 +563,7 @@ return {
     {
         "petertriho/nvim-scrollbar",
         event = "VeryLazy",
+        commit = "5b103ef0fd2e8b9b4be3878ed38d224522192c6c",
         dependencies = {
             "kevinhwang91/nvim-hlslens",
             {
@@ -1260,10 +1261,12 @@ return {
                 ---@type fun(question: lc.ui.Question)[]
                 ["question_enter"] = {
                     function()
-                        local found = vim.fn.search("Solution", "w")
-                        if found == 0 then
-                            vim.cmd("normal! G")
-                        end
+                        vim.schedule(function()
+                            local found = vim.fn.search("Solution", "w")
+                            if 0 == found then
+                                vim.cmd("normal! G")
+                            end
+                        end)
                     end,
                 },
 
