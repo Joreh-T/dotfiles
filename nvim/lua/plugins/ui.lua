@@ -76,12 +76,12 @@ return {
                             action = ":lua Snacks.dashboard.pick('files')",
                         },
                         { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
-                        {
-                            icon = " ",
-                            key = "g",
-                            desc = "Find Text",
-                            action = ":lua Snacks.dashboard.pick('live_grep')",
-                        },
+                        -- {
+                        --     icon = " ",
+                        --     key = "g",
+                        --     desc = "Find Text",
+                        --     action = ":lua Snacks.dashboard.pick('live_grep')",
+                        -- },
                         {
                             icon = " ",
                             key = "r",
@@ -101,6 +101,29 @@ return {
                         -- { icon = " ", key = "s", desc = "Select Session", action = "<leader>qS" },
                         { icon = " ", key = "m", desc = "More Projects", action = ":lua require('persistence').select()" },
                         { icon = "󰛡 ", key = "p", desc = "Plugins", action = ":Lazy" },
+                        {
+                            icon = "󰝰 ",
+                            key = "d",
+                            desc = "Plugins Directory",
+                            action = function()
+                                local plugins_dir = vim.fn.stdpath("data") .. "/lazy"
+                                vim.cmd("cd " .. plugins_dir)
+                                vim.schedule(function()
+                                    local buf = vim.api.nvim_get_current_buf()
+                                    vim.api.nvim_buf_delete(buf, { force = true })
+                                    utils.focus_largest_window()
+                                    if utils.has_yazi() then
+                                        utils.set_welcome_buffer()
+                                        vim.cmd("Yazi")
+                                    else
+                                        vim.cmd("Neotree")
+                                        utils.focus_largest_window()
+                                        utils.set_welcome_buffer()
+                                        vim.cmd("Neotree")
+                                    end
+                                end)
+                            end,
+                        },
                         -- { icon = " ", key = "x", desc = "Extras", action = ":LazyExtras" },
                         { icon = " ", key = "q", desc = "Quit", action = ":qa" },
                     },
