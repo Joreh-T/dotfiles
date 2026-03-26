@@ -1,4 +1,5 @@
 local utils = require("config.utils")
+-- local LazyVim = require("lazyvim.util") -- Ensure access to lazyvim's utility functions.
 
 return {
     {
@@ -28,8 +29,10 @@ return {
         "linux-cultist/venv-selector.nvim",
         branch = "main",
         cmd = "VenvSelect",
+        event = "VeryLazy",
         enabled = function()
-            return LazyVim.has("telescope.nvim")
+            -- return LazyVim.has("telescope.nvim")
+            return _G.LazyVim ~= nil and LazyVim.has("telescope.nvim")
         end,
         opts = {
             settings = {
