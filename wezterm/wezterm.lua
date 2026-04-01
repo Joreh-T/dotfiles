@@ -49,8 +49,12 @@ config.launch_menu = {
         args = { "powershell.exe", "-NoLogo" },
     },
     {
-        label = " WSL Default",
+        label = " WSL Ubuntu22.04",
         args = { "wsl.exe", "~" },
+    },
+    {
+        label = " WSL Ubuntu20.04",
+        args = { "wsl.exe", "~", "-d", "ubuntu20.04" },
     },
     {
         label = " SSH -> 100Ask",
