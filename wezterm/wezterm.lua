@@ -153,13 +153,13 @@ config.initial_cols = 110
 config.initial_rows = 30
 
 config.text_background_opacity = 1
-config.window_background_opacity = 0.9
+config.window_background_opacity = 0.98
 -- config.win32_system_backdrop = "Acrylic"
 -- config.win32_system_backdrop = 'Mica'
 config.win32_system_backdrop = "Tabbed"
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
-local top_padding = ("fresh" == custom.hostname.current) and { config.font_size / 2 } or { config.font_size }
+local top_padding = { config.font_size }
 
 config.window_padding = {
     left = 0,
