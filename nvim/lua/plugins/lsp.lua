@@ -9,7 +9,19 @@ return {
                 autostart = false,
                 filetypes = {},
             }
-            -- opts.diagnostics.virtual_text = false
+            opts.servers.clangd = {
+                cmd = {
+                    "clangd",
+                    "--background-index",
+                    "--clang-tidy",
+                    "--header-insertion=iwyu",
+                    "--completion-style=detailed",
+                    "--function-arg-placeholders",
+                    "--fallback-style=llvm",
+                    "--query-driver=**/*gcc*",
+                    -- "--compile-commands-dir=build", 
+                }
+            }
         end,
     },
 
