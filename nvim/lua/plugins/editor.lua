@@ -871,7 +871,7 @@ return {
                 },
                 filtered_items = {
                     hide_dotfiles = false,
-                    hide_gitignored = true,
+                    hide_gitignored = false,
                 },
                 always_show = { -- remains visible even if other settings would normally hide it
                     ".gitignored",
