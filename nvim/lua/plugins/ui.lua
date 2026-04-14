@@ -623,7 +623,8 @@ return {
                     color = { fg = "#98c379" },
                     padding = { left = 1, right = 0 },
                 },
-                { "progress", separator = " ", padding = { left = 1, right = 0 } },
+                {"fileformat"},
+                { "progress", separator = " ", padding = { left = 0, right = 0 } },
                 { "location", padding = { left = 0, right = 1 } },
             }
             opts.sections.lualine_z = {}
