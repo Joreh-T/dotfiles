@@ -1,10 +1,5 @@
 local utils = require("config.utils")
 
--- Set PowerShell as the default shell when Neovim starts on Windows
-if utils.is_windows() then
-    vim.o.shell = "powershell"
-end
-
 vim.opt.list = true -- Show invisible characters
 -- vim.opt.listchars = { space = "·", tab = ">-", eol = "↲" }
 vim.opt.listchars = { space = "·", tab = " ", eol = "󰌑" }
@@ -26,8 +21,11 @@ vim.opt.fileencodings = { "utf-8", "gbk", "gb2312",  "utf-16le", "big5", "euc-jp
 vim.g.maplocalleader = ';'
 ---------------------------------------------------------------------
 if not utils.is_windows() then
+    vim.opt.fileformats = "unix,dos"
     vim.g.python3_host_prog = "/usr/bin/python3"
 else
+    vim.o.shell = "powershell" -- Set PowerShell as the default shell
+    vim.opt.fileformats = "dos,unix"
     vim.g.python3_host_prog = "python3"
 end
 
