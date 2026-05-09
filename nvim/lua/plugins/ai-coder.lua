@@ -14,10 +14,9 @@ return {
                     __inherited_from = "openai",
                     api_key_name = "DEEPSEEK_API_KEY",
                     endpoint = "https://api.deepseek.com",
-                    model = "deepseek-reasoner",
+                    model = "deepseek-v4-pro",
                     -- model = "deepseek-coder",
                     timeout = 30000,
-                    max_tokens = 8192,
                 },
                 aihubmix = {
                     model = "DeepSeek-R1", -- "gemini-2.5-pro-preview-05-06", "DeepSeek-R1"
@@ -28,8 +27,8 @@ return {
                 ---@alias AvantePosition "right" | "left" | "top" | "bottom" | "smart"
                 position = "right",
                 wrap = true, -- similar to vim.o.wrap
-                width = 24, -- default % based on available width in vertical layout
-                height = 100, -- default % based on available height in horizontal layout
+                width = 30, -- default % based on available width in vertical layout
+                -- height = 100, -- default % based on available height in horizontal layout
                 sidebar_header = {
                     enabled = true, -- true, false to enable/disable the header
                     align = "center", -- left, center, right for title
@@ -52,19 +51,23 @@ return {
                 },
             },
             behaviour = {
-                --   auto_focus_sidebar = true,
-                --   auto_suggestions = false, -- Experimental stage
-                --   auto_suggestions_respect_ignore = false,
-                --   auto_set_highlight_group = true,
-                --   auto_set_keymaps = true,
-                --   auto_apply_diff_after_generation = false,
-                --   jump_result_buffer_on_finish = true,
-                --   support_paste_from_clipboard = false,
-                --   minimize_diff = true,
-                enable_token_counting = false,
-                enable_cursor_planning_mode = true,
-                enable_claude_text_editor_tool_mode = true,
-                use_cwd_as_project_root = true,
+                auto_suggestions = false, -- Experimental stage
+                auto_set_highlight_group = true,
+                auto_set_keymaps = true,
+                auto_apply_diff_after_generation = false,
+                support_paste_from_clipboard = false,
+                minimize_diff = true, -- Whether to remove unchanged lines when applying a code block
+                enable_token_counting = true, -- Whether to enable token counting. Default to true.
+                auto_add_current_file = true, -- Whether to automatically add the current file when opening a new chat. Default to true.
+                auto_approve_tool_permissions = true, -- Default: auto-approve all tools (no prompts)
+                -- Examples:
+                -- auto_approve_tool_permissions = false,                -- Show permission prompts for all tools
+                -- auto_approve_tool_permissions = {"bash", "str_replace"}, -- Auto-approve specific tools only
+                ---@type "popup" | "inline_buttons"
+                confirmation_ui_style = "inline_buttons",
+                --- Whether to automatically open files and navigate to lines when ACP agent makes edits
+                ---@type boolean
+                acp_follow_agent_locations = true,
             },
         },
         -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
@@ -76,13 +79,12 @@ return {
             end
         end)(),
         dependencies = {
-            "nvim-treesitter/nvim-treesitter",
-            -- "stevearc/dressing.nvim", -- for input provider dressing
-            "folke/snacks.nvim", -- -- for input provider snacks
             "nvim-lua/plenary.nvim",
             "MunifTanjim/nui.nvim",
+            -- "stevearc/dressing.nvim", -- for input provider dressing
+            "folke/snacks.nvim", -- -- for input provider snacks
             "ibhagwan/fzf-lua", -- for file_selector provider fzf
-            --- The below dependencies are optional,
+            "hrsh7th/nvim-cmp",
             "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
             -- "zbirenbaum/copilot.lua", -- for providers='copilot'
             -- {
