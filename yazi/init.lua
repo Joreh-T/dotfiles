@@ -13,24 +13,33 @@
 -- })
 
 -- https://github.com/yazi-rs/plugins/tree/main/git.yazi
-th.git = th.git or {}
 
-th.git.added = ui.Style():fg("green")
-th.git.added_sign = ""
+require("git"):setup {
+}
 
-th.git.deleted = ui.Style():fg("red"):bold()
-th.git.deleted_sign = ""
+local MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 
-th.git.ignored = ui.Style():fg("gray")
-th.git.ignored_sign = ""
+-- file size and modify time, shown in the linemode
+function Linemode:size_and_mtime()
+    local time = math.floor(self._file.cha.mtime or 0)
+    local time_str
+    if time == 0 then
+        time_str = ""
+    else
+        local now_year   = tonumber(os.date("%Y"))
+        local file_year  = tonumber(os.date("%Y", time))
+        local month_idx  = tonumber(os.date("%m", time))
+        local day        = tonumber(os.date("%d", time))
+        local month      = MONTHS[month_idx] or "???"
 
-th.git.modified = ui.Style():fg("yellow")
-th.git.modified_sign = ""
+        if file_year == now_year then
+            time_str = string.format("%s %2d %s", month, day, os.date("%H:%M", time))
+        else
+            time_str = string.format("%s %2d  %d", month, day, file_year)
+        end
+    end
 
-th.git.untracked = ui.Style():fg("blue")
-th.git.untracked_sign = ""
-
-th.git.updated = ui.Style():fg("green")
-th.git.updated_sign = ""
-
-require("git"):setup()
+    local size = self._file:size()
+    return string.format("%s %s", size and ya.readable_size(size) or "-", time_str)
+end

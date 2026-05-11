@@ -1,5 +1,18 @@
-"$schema" = "https://yazi-rs.github.io/schemas/theme.json"
-
 [flavor]
 # dark  = "catppuccin-macchiato"
 # light = "catppuccin-latte"
+
+[git]
+added_sign = ""
+ignored_sign = ""
+deleted_sign = ""
+modified_sign = ""
+untracked_sign = ""
+updated_sign = ""
+
+modified = {fg = "yellow"}
+added = {fg = "magenta"}
+deleted = {fg = "red"}
+ignored = {fg = "gray"}
+untracked = {fg = "green"}
+updated = {fg = "blue"}
