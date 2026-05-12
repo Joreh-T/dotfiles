@@ -114,11 +114,12 @@ if vim.g.neovide then
 
     vim.g.snacks_animate = false
     vim.g.neovide_title_background_color = "#2a2f38"
+    vim.g.neovide_theme = 'bg_color'
     -- string.format(
     --   "%x",
     -- vim.api.nvim_get_hl(0, {id=vim.api.nvim_get_hl_id_by_name("Normal")}).bg)
     --
-    vim.o.guifont = "JetBrainsMono Nerd Font:h13.5"
+    vim.o.guifont = "JetBrainsMono Nerd Font:h13"
     -- vim.o.guifont = "Cascadia Code:h12:style=Regular,Segoe UI Emoji:h12"
     vim.g.neovide_ligatures = true -- Enable ligature effects
 
@@ -126,9 +127,17 @@ if vim.g.neovide then
     -- vim.g.neovide_refresh_rate = 60
 
     -- Cursor Animation
-    vim.g.neovide_cursor_animation_length = 0.1 -- Cursor movement animation speed
-    vim.g.neovide_cursor_trail_size = 0.15 -- Trail length
+    vim.g.neovide_cursor_animation_length = 0.07 -- Cursor movement animation speed
+    vim.g.neovide_cursor_trail_size = 0 -- Trail length
     vim.g.neovide_cursor_antialiasing = true -- Anti-aliasing
+
+    vim.g.neovide_cursor_smooth_blink = true
+    vim.opt.guicursor = {
+        "n-v-c:block-blinkwait2000-blinkon900-blinkoff900",   -- mode n、v、c: block cursor
+        "i-ci-ve:ver25-blinkwait2000-blinkon900-blinkoff900", -- mode i: vertical bar cursor
+        "r-cr:hor20-blinkwait2000-blinkon900-blinkoff900",    -- mode r: horizontal bar cursor
+        "o:hor50-blinkwait300-blinkon900-blinkoff900",        -- suspended
+    }
     -- ""：Disable particles
     -- "railgun"：Beam effect
     -- "torpedo"：Trail particles
@@ -136,7 +145,9 @@ if vim.g.neovide then
     -- "sonicboom"：Shockwave effect
     -- "ripple"：Ripple effect
     -- "wireframe"：Wireframe effect
-    vim.g.neovide_cursor_vfx_mode = "pixiedust" -- Particle effect mode
+
+    -- Configed in autocmd
+    vim.g.neovide_cursor_vfx_mode = "" -- Particle effect mode
 
     -- Scroll Animation
     vim.g.neovide_scroll_animation_length = 0.3 -- Scroll animation duration (seconds)

@@ -75,20 +75,20 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 ------------------ End Of Avante------------------
 
 ------------------ Neovide ------------------
-vim.api.nvim_create_autocmd("ModeChanged", {
+vim.api.nvim_create_autocmd("BufWinEnter", {
     group = newGroup("neovide-cursor-effects"),
     pattern = "*",
-    callback = function()
-        if vim.g.neovide then
-            if vim.fn.mode() == "i" then
-                vim.g.neovide_cursor_animation_length = 0.0
-                vim.g.neovide_cursor_vfx_mode = "" -- Disable particle effects
-                vim.g.neovide_cursor_trail_size = 0 -- Trail length
-            else
-                vim.g.neovide_cursor_animation_length = 0.15 -- Cursor movement animation speed
-                vim.g.neovide_cursor_vfx_mode = "pixiedust" -- Particle effect mode
-                vim.g.neovide_cursor_trail_size = 0.2 -- Trail length
-            end
+    callback = function(args)
+        if not vim.g.neovide then
+            vim.api.nvim_del_autocmd(args.id)
+            return
+        end
+
+        if vim.bo.modifiable then
+            vim.g.neovide_cursor_vfx_mode = "pixiedust" -- Particle effect mode
+            vim.api.nvim_del_autocmd(args.id)
+        else
+            vim.g.neovide_cursor_vfx_mode = ""
         end
     end,
 })
