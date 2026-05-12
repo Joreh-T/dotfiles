@@ -119,15 +119,15 @@ if vim.g.neovide then
     --   "%x",
     -- vim.api.nvim_get_hl(0, {id=vim.api.nvim_get_hl_id_by_name("Normal")}).bg)
     --
-    vim.o.guifont = "JetBrainsMono Nerd Font:h13"
+    vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font:h13"
     -- vim.o.guifont = "Cascadia Code:h12:style=Regular,Segoe UI Emoji:h12"
     vim.g.neovide_ligatures = true -- Enable ligature effects
 
     vim.g.neovide_hide_mouse_when_typing = true
-    -- vim.g.neovide_refresh_rate = 60
+    vim.g.neovide_refresh_rate = 60
 
     -- Cursor Animation
-    vim.g.neovide_cursor_animation_length = 0.07 -- Cursor movement animation speed
+    vim.g.neovide_cursor_animation_length = 0.1 -- Cursor movement animation speed
     vim.g.neovide_cursor_trail_size = 0 -- Trail length
     vim.g.neovide_cursor_antialiasing = true -- Anti-aliasing
 
