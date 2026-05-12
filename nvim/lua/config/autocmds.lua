@@ -416,3 +416,14 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 --         utils.set_restore_session_win_count(win_count)
 --     end,
 -- })
+
+vim.api.nvim_create_autocmd("FocusGained", {
+    group = newGroup("force_english_input"),
+    callback = function(args)
+        local ENGLISH_ID = "1033"
+        if vim.fn.executable("im-select") and utils.is_windows() then
+            vim.system({"im-select.exe", ENGLISH_ID})
+        end
+        vim.api.nvim_del_autocmd(args.id)
+    end,
+})
