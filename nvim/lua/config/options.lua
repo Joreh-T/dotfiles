@@ -112,6 +112,7 @@ if vim.g.neovide then
         vim.g.neovide_opacity = 0.98
     end
 
+    vim.g.snacks_animate = false
     vim.g.neovide_title_background_color = "#2a2f38"
     -- string.format(
     --   "%x",
