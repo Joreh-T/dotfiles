@@ -1015,4 +1015,8 @@ end, {
     desc = "Display current LSP/Treesitter highlight links in Neovim (with ! shows colors and styles)",
 })
 
+function M.text_save() vim.cmd.write() end
+function M.text_copy() vim.cmd([[normal! "+y]]) end
+function M.text_paste() vim.api.nvim_paste(vim.fn.getreg("+"), true, -1) end
+
 return M

@@ -82,6 +82,11 @@ map("v", "p", '"_dP') -- Prevent overwriting the system clipboard when pasting i
 --   {map("n", "gj", "<cmd>lua vim.diagnostic.goto_next()<CR>", { noremap = true, silent = true })}
 --   { "K", function() return vim.lsp.buf.hover() end, desc = "Hover" },
 
+-- Ctrl c v s
+-- map({ "n", "i", "v" }, "<C-s>", utils.text_save, { desc = "Save" })
+map("v", "<C-c>", utils.text_copy, { silent = true, desc = "Copy" })
+map({ "n", "i", "v", "c", "t" }, "<C-v>", utils.text_paste, { silent = true, desc = "Paste" })
+
 ------------------------- Git Tools -------------------------
 map("n", "<leader>gd", utils.toggle_diffview, { noremap = true, silent = true, desc = "Toggle Diffview" })
 map("n", "<leader>gH", utils.toggle_history_view, { noremap = true, silent = true, desc = "Toggle File History" })
