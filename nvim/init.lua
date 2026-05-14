@@ -36,7 +36,8 @@ local icons = require("lazyvim.config").icons
 
 local win = detect_windows_version()
 
-if vim.g.neovide or  (win and win.is_win10) then
+-- if vim.g.neovide or  (win and win.is_win10) then
+if win and win.is_win10 then
     icons.diagnostics.Error = " "
     icons.diagnostics.Warn = " "
     icons.diagnostics.Info = " "
