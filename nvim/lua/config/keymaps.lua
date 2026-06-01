@@ -18,21 +18,17 @@ map("n", "<S-u>", "<C-r>", { noremap = true, silent = true })
 map("n", "<leader>r", "<cmd>LspRestart<CR>", { noremap = true, silent = false, desc = "Restart LSP" })
 map("n", "<CR>", "o<esc>", { noremap = true, silent = true })
 
---open/close terminal
-map({"n", "t"}, "<a-`>", function() Snacks.terminal(nil) end, { desc = "Terminal (cwd)" })
--- map("n", "<a-`>", function() Snacks.terminal(nil, { cwd = LazyVim.root() }) end, { desc = "Open Terminal (Root Dir)" })
--- { map("t", "<a-`>", "<cmd>close<cr>", { desc = "Hide Terminal" }) },
+-- Terminal: toggle (show/hide the same instance), new (always create), close with q in normal mode
+map({"n", "t"}, "<a-`>", function() Snacks.terminal.toggle(nil) end, { desc = "Toggle Terminal (cwd)" })
 
--- map("n", "<a-`>", utils.open_terminal_rezise_height, { desc = "Terminal (cwd)" })
--- map("t", "<a-`>", utils.close_terminal_and_focus_largest, { desc = "Hide Terminal and Focus Largest Window" })
+-- Always create a brand new terminal window (supports count prefix: 2<leader>fn etc.)
+del("n", "<leader>ft");
+del("n", "<leader>fT");
+map("n", "<leader>tn", function() Snacks.terminal.open(nil) end, { desc = "New Terminal (cwd)" })
+map("n", "<leader>tN", function() Snacks.terminal.open(nil, { cwd = LazyVim.root() }) end, { desc = "New Terminal (Root Dir)" })
 
-
-map("n", "<leader>ft", function()
-    Snacks.terminal()
-end, { desc = "Terminal (cwd)" })
-map("n", "<leader>fT", function()
-    Snacks.terminal(nil, { cwd = LazyVim.root() })
-end, { desc = "Terminal (Root Dir)" })
+map("n", "<leader>tt", function() Snacks.terminal.toggle(nil) end, { desc = "Toggle Terminal (cwd)" })
+map("n", "<leader>tT", function() Snacks.terminal.toggle(nil, { cwd = LazyVim.root() }) end, { desc = "Toggle Terminal (Root Dir)" })
 
 -- buffer motion
 map("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })

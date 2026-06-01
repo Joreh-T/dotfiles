@@ -555,7 +555,7 @@ return {
                 { "<leader>K", group = "Keyword Manual", icon = { icon = "󰷈", color = "" } },
                 { "<leader>r", group = "Restart LSP", icon = { icon = "", color = "red" } },
                 { "<leader>a", group = "Avante", icon = { icon = "󰆾", color = "yellow" } },
-                { "<leader>t", group = "Task Runner", icon = { icon = "", color = "yellow" } },
+                { "<leader>t", group = "Terminal/Task Runner", icon = { icon = "", color = "yellow" } },
             },
         },
     },
