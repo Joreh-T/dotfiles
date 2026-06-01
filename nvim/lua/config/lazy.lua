@@ -18,8 +18,6 @@ end
 -- 'rtp' is the path Neovim uses to search for plugins, scripts, configuration files, and other resources. `vim.opt.rtp` is used to manipulate Neovim's runtimepath option, and the prepend method adds the specified path to the beginning of runtimepath. This ensures Neovim prioritizes loading plugins or configurations from the specified path.
 vim.opt.rtp:prepend(lazypath)
 
-local utils = require("config.utils")
-
 local lazy_config = {
     spec = {
         -- add LazyVim and import LazyVim's plugins
