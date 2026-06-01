@@ -1019,4 +1019,57 @@ function M.text_save() vim.cmd.write() end
 function M.text_copy() vim.cmd([[normal! "+y]]) end
 function M.text_paste() vim.api.nvim_paste(vim.fn.getreg("+"), true, -1) end
 
+---@param opts { on_success?: fun(), on_fail?: fun() }
+function M.switch_to_english(opts)
+    opts = opts or {}
+    local ENGLISH_ID = "1033"
+    if not (vim.fn.executable("im-select") == 1 and M.is_windows()) then
+        if opts.on_fail then opts.on_fail() end
+        return
+    end
+    -- Step 1: switch to English
+    vim.system({ "im-select.exe", ENGLISH_ID }, nil, function(switch_result)
+        if switch_result.code ~= 0 then
+            if opts.on_fail then opts.on_fail() end
+            return
+        end
+        -- Step 2: read back to verify
+        vim.system({ "im-select.exe" }, { text = true }, function(query_result)
+            if query_result.code == 0 and query_result.stdout:match(ENGLISH_ID) then
+                if opts.on_success then opts.on_success() end
+            else
+                if opts.on_fail then opts.on_fail() end
+            end
+        end)
+    end)
+end
+
+--- Register FocusGained autocmd + deferred fallback to force English input on startup.
+function M.setup_force_english_input()
+    local autocmd_id = nil
+
+    local function cleanup()
+        if autocmd_id then
+            pcall(vim.api.nvim_del_autocmd, autocmd_id)
+            autocmd_id = nil
+        end
+    end
+
+    local function attempt()
+        M.switch_to_english({
+            on_success = cleanup,
+            -- on_fail intentionally left nil → keep autocmd for next retry
+        })
+    end
+
+    autocmd_id = vim.api.nvim_create_autocmd("FocusGained", {
+        group = vim.api.nvim_create_augroup("force_english_input", { clear = true }),
+        callback = attempt,
+    })
+
+    -- Fallback for terminals that don't emit FocusGained on initial launch
+    vim.schedule(attempt)
+    -- vim.defer_fn(attempt, 100)
+end
+
 return M

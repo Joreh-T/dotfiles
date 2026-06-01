@@ -69,3 +69,5 @@ if utils.is_windows() then
         end
     end, 5000)
 end
+
+utils.setup_force_english_input()

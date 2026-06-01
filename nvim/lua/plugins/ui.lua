@@ -377,15 +377,16 @@ return {
                 table.insert(opts[pos], {
                     ft = "snacks_terminal",
                     size = { height = 0.22, width = 0.35 },
-                    -- title = "[%{b:snacks_terminal.id}] %{b:term_title} %{b:os.date("%H:%M")}",
-                    title = function()
+                    -- title = "[%{b:snacks_terminal.id}] %{b:term_title}",
+                    -- title = function()
                         -- local term_title = vim.b.term_title or "Terminal"
                         -- local path = term_title:match("^.-:(.+)$") or term_title
                         -- term_title = term_title:match("[^/\\]+$") or term_title
                         -- term_title = #term_title > 20 and "… " .. term_title:sub(-20) or term_title
-                        local open_time = vim.b.open_time or os.date("%H:%M")
-                        return ("Terminal @%s"):format(open_time)
-                    end,
+                        -- local open_time = vim.b.open_time or os.date("%H:%M")
+                        -- return ("Terminal @%s"):format(open_time)
+                    -- end,
+                    title = "Powered By Fresh Thinking",
 
                     filter = function(_buf, win)
                         return vim.w[win].snacks_win
@@ -426,8 +427,8 @@ return {
                     winhighlight = "WinBar:EdgyWinBarNC,WinBarNC:EdgyWinBarNC",
                 },
                 icons = {
-                    closed = "󰪟",
-                    open = "⦿",
+                    closed = "❄️",
+                    open = "🌈",
                 },
                 keys = {
                     ["<c-Right>"] = function(win)
