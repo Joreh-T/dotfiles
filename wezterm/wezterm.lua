@@ -30,7 +30,45 @@ custom = {
 }
 
 --------------------------------- Lauch ---------------------------------
-config.default_prog = { "powershell.exe", "-NoLogo" }
+-- Prefer pwsh (PowerShell Core), fall back to Windows PowerShell
+local function resolve_shell()
+    local pwsh = { "pwsh.exe", "-NoLogo" }
+    local powershell = { "powershell.exe", "-NoLogo" }
+
+    if F.is_windows_os() then
+        local success, stdout, stderr = wezterm.run_child_process({"where.exe", "pwsh.exe"})
+
+        -- local desktop_path = os.getenv("USERPROFILE") .. "\\Desktop\\pwsh_debug.txt"
+        
+        -- local file = io.open(desktop_path, "w")
+        -- if file then
+        --     file:write("success: " .. tostring(success) .. "\n")
+        --     if stdout and stdout ~= "" then
+        --         file:write("pwsh.exe path:\n\n")
+        --         file:write(stdout)
+        --     else
+        --         file:write("don't find pwsh.exe\n")
+        --     end
+            
+        --     if stderr and stderr ~= "" then
+        --         file:write("\n\nError information:\n" .. stderr)
+        --     end
+        -- end
+
+        if success then
+            -- file:write("\n\npwsh.exe found, using pwsh.exe as default shell.\n")
+            -- file:close()
+            return pwsh
+        else
+            -- file:write("\n\npwsh.exe not found, using powershell.exe as default shell.\n")
+            return powershell
+        end
+    end
+
+    return powershell
+end
+
+config.default_prog = resolve_shell()
 config.automatically_reload_config = true
 
 -- CLipboard
@@ -46,7 +84,7 @@ config.automatically_reload_config = true
 config.launch_menu = {
     {
         label = "󰨊 PoserShell",
-        args = { "powershell.exe", "-NoLogo" },
+        args = resolve_shell(),
     },
     {
         label = " WSL Ubuntu22.04",

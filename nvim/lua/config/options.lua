@@ -23,7 +23,12 @@ vim.g.maplocalleader = ';'
 if not utils.is_windows() then
     vim.g.python3_host_prog = "/usr/bin/python3"
 else
-    vim.o.shell = "powershell" -- Set PowerShell as the default shell
+    vim.opt.shell = vim.fn.executable("pwsh") == 1 and "pwsh" or "powershell"
+    vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
+    vim.opt.shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+    vim.opt.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+    vim.opt.shellquote = ""
+    vim.opt.shellxquote = ""
     vim.g.python3_host_prog = "python3"
 end
 
