@@ -4,6 +4,7 @@
 
 # manually set '-Verbose' to get verbose output: . "$HOME\dotfiles\powershell\init.ps1" -Verbose
 
+Clear-Host
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Verbose "[pwsh:init] loading from $ScriptDir" -Verbose:$false
