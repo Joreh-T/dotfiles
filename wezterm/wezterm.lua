@@ -72,7 +72,7 @@ local function resolve_shell()
         end
     end
 
-    return powershell
+    return { "bash", "-l" }
 end
 
 config.default_prog = resolve_shell()
@@ -90,7 +90,7 @@ config.automatically_reload_config = true
 -- Launch commands
 config.launch_menu = {
     {
-        label = "󰨊 PoserShell",
+        label = "󰨊 Shell",
         args = resolve_shell(),
     },
     {
