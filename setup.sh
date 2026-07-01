@@ -7,7 +7,7 @@ DOTFILES_DIR="$HOME/dotfiles"
 declare -A LINKS=(
     ["$DOTFILES_DIR/nvim"]="$HOME/.config/nvim"
     ["$DOTFILES_DIR/yazi"]="$HOME/.config/yazi"
-    ["$DOTFILES_DIR/vim/vimrc"]="$HOME/.vimrc"
+    ["$DOTFILES_DIR/vim/.vimrc"]="$HOME/.vimrc"
 )
 
 echo "Creating symlinks..."
