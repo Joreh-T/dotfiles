@@ -63,6 +63,13 @@ local function resolve_shell()
             -- file:write("\n\npwsh.exe not found, using powershell.exe as default shell.\n")
             return powershell
         end
+    elseif F.is_linux_os() then
+        local success, stdout, stderr = wezterm.run_child_process({"which", "zsh"})
+        if success then
+            return { "zsh", "-l" }
+        else
+            return { "bash", "-l" }
+        end
     end
 
     return powershell
