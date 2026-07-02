@@ -34,10 +34,12 @@ local icons = require("lazyvim.config").icons
 -- local is_windows_terminal = vim.fn.getenv("WT_SESSION") ~= vim.NIL -- Windows Terminal
 -- local is_wezterm = vim.fn.getenv("WEZTERM_PANE") ~= vim.NIL -- WezTerm
 
+local utils = require("config.utils")
+
 local win = detect_windows_version()
 
 -- if vim.g.neovide or  (win and win.is_win10) then
-if win and win.is_win10 then
+if (win and win.is_win10) or utils.is_linux() then
     icons.diagnostics.Error = " "
     icons.diagnostics.Warn = " "
     icons.diagnostics.Info = " "
@@ -59,7 +61,6 @@ else
     -- vim.notify("LSP log file does not exist: " .. log_path, vim.log.levels.INFO)
 end
 
-local utils = require("config.utils")
 if utils.is_windows() then
     vim.defer_fn(function()
         local shada_dir = vim.fn.stdpath("data") .. "/shada/"
