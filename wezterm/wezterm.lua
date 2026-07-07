@@ -203,6 +203,9 @@ config.window_background_opacity = 0.98
 -- config.win32_system_backdrop = 'Mica'
 config.win32_system_backdrop = "Tabbed"
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
+if F.is_linux_os() then
+    config.window_decorations = "NONE"
+end
 
 local top_padding = { config.font_size }
 
@@ -789,7 +792,7 @@ wezterm.on("update-status", function(window, pane)
     }))
 
     -- Right status
-    window:set_right_status(wezterm.format({
+    local right_status = {
         -- Wezterm has a built-in nerd fonts
         --
         -- Current working directory
@@ -849,10 +852,15 @@ wezterm.on("update-status", function(window, pane)
         { Text = " " .. time },
         { Background = { Color = colors.background } },
         { Foreground = { Color = colors.ansi[1] } },
-        { Text = nerdfonts.ple_right_half_circle_thick .. " " },
-        { Foreground = { Color = color_window_decorations } },
-        { Text = nerdfonts.ple_left_half_circle_thick },
-    }))
+        { Text = nerdfonts.ple_right_half_circle_thick .. (F.is_linux_os() and "" or " ") },
+    }
+
+    if not F.is_linux_os() then
+        table.insert(right_status, { Foreground = { Color = color_window_decorations } })
+        table.insert(right_status, { Text = nerdfonts.ple_left_half_circle_thick })
+    end
+
+    window:set_right_status(wezterm.format(right_status))
 end)
 
 -- Events define tab title
