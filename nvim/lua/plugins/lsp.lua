@@ -18,8 +18,7 @@ return {
                     "--completion-style=detailed",
                     "--function-arg-placeholders=true",
                     "--fallback-style=llvm",
-                    "--query-driver=**/*gcc*",
-                    -- "--compile-commands-dir=build", 
+                    "--query-driver=**",
                 }
             }
         end,

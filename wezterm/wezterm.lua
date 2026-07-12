@@ -198,7 +198,7 @@ config.initial_cols = 110
 config.initial_rows = 30
 
 config.text_background_opacity = 1
-config.window_background_opacity = 0.98
+config.window_background_opacity = 1
 -- config.win32_system_backdrop = "Acrylic"
 -- config.win32_system_backdrop = 'Mica'
 config.win32_system_backdrop = "Tabbed"
