@@ -665,6 +665,30 @@ wezterm.on("augment-command-palette", function(window, pane)
                 end),
             }),
         },
+        {
+            brief = "ssh@TDA4",
+            icon = "md_login",
+            action = wezterm.action_callback(function(window, pane)
+                pane:send_text("ssh root@192.168.124.22\r")
+                wezterm.sleep_ms(1200)
+                pane:send_text("root\r\n")
+                wezterm.sleep_ms(500)
+                pane:send_text("HZFVision2024\r\n")
+                window:active_tab():set_title("TDA4")
+            end),
+        },
+        {
+            brief = "ssh@NX-C",
+            icon = "md_login",
+            action = wezterm.action_callback(function(window, pane)
+                pane:send_text("ssh ams@192.168.55.1\r")
+                wezterm.sleep_ms(1200)
+                pane:send_text("ams\r\n")
+                wezterm.sleep_ms(500)
+                pane:send_text("HZFVision2024\r\n")
+                window:active_tab():set_title("NX-C")
+            end),
+        },
         -- {
         --     brief = "SSH Login 512",
         --     icon = "md_login",
