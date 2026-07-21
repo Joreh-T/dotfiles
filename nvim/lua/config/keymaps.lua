@@ -53,7 +53,7 @@ map("v", "<S-l>", "$h", { noremap = true, silent = true })
 map("i", "jk", "<esc>", { noremap = true, silent = true })
 -- map("t", "jk", [[<C-\><C-n>]], { noremap = true, silent = true })
 -----------------------------------------------------------
-map("v", "jkl", "<esc>", { noremap = true, silent = true })
+-- map("v", "jkl", "<esc>", { noremap = true, silent = true })
 
 map("n", "gh", function()
     vim.diagnostic.open_float(nil, {

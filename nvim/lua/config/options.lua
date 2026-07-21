@@ -123,8 +123,11 @@ if vim.g.neovide then
     -- string.format(
     --   "%x",
     -- vim.api.nvim_get_hl(0, {id=vim.api.nvim_get_hl_id_by_name("Normal")}).bg)
-    --
-    vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h13.5"
+    if utils.is_windows() then   --
+        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h13.5"
+    else
+        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h17"
+    end
     -- vim.o.guifont = "Cascadia Code:h12:style=Regular,Segoe UI Emoji:h12"
     vim.g.neovide_ligatures = true -- Enable ligature effects
 
