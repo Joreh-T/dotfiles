@@ -36,10 +36,10 @@ local function resolve_shell()
     local powershell = { "powershell.exe", "-NoLogo" }
 
     if F.is_windows_os() then
-        local success, stdout, stderr = wezterm.run_child_process({"where.exe", "pwsh.exe"})
+        local success, stdout, stderr = wezterm.run_child_process({ "where.exe", "pwsh.exe" })
 
         -- local desktop_path = os.getenv("USERPROFILE") .. "\\Desktop\\pwsh_debug.txt"
-        
+
         -- local file = io.open(desktop_path, "w")
         -- if file then
         --     file:write("success: " .. tostring(success) .. "\n")
@@ -49,7 +49,7 @@ local function resolve_shell()
         --     else
         --         file:write("don't find pwsh.exe\n")
         --     end
-            
+
         --     if stderr and stderr ~= "" then
         --         file:write("\n\nError information:\n" .. stderr)
         --     end
@@ -64,7 +64,7 @@ local function resolve_shell()
             return powershell
         end
     elseif F.is_linux_os() then
-        local success, stdout, stderr = wezterm.run_child_process({"which", "zsh"})
+        local success, stdout, stderr = wezterm.run_child_process({ "which", "zsh" })
         if success then
             return { "zsh", "-l" }
         else
@@ -308,8 +308,8 @@ config.keys = {
         key = "v",
         mods = "CTRL|SHIFT",
         action = action.Multiple({
-            action.PasteFrom("PrimarySelection"),
-            action.ClearSelection,
+            -- action.PasteFrom("PrimarySelection"),
+            action.PasteFrom("Clipboard"),
         }),
     },
     {
@@ -597,7 +597,15 @@ config.alternate_buffer_wheel_scroll_speed = 5
 -- Mouse
 -- config.disable_default_mouse_bindings = true
 config.mouse_bindings = {
-    { event = { Down = { streak = 1, button = "Middle" } }, mods = "NONE", action = action.PasteFrom("Clipboard") },
+    -- { event = { Down = { streak = 1, button = "Right" } }, mods = "NONE", action = action.PasteFrom("Clipboard")},
+    {
+        event = { Down = { streak = 1, button = "Right" } },
+        mods = "NONE",
+        action = action.Multiple({
+            action.PasteFrom("Clipboard"),
+        }),
+    },
+
     -- {
     --     event = { Drag = { streak = 1, button = "Left" } },
     --     mods = "SHIFT",
