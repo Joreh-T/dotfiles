@@ -665,59 +665,59 @@ wezterm.on("augment-command-palette", function(window, pane)
                 end),
             }),
         },
-        {
-            brief = "SSH Login 512",
-            icon = "md_login",
-            action = wezterm.action_callback(function(window, pane)
-                pane:send_text("ssh admin@192.168.225.1\r")
-                wezterm.sleep_ms(1000)
-                pane:send_text("admin@123\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("support enable\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("inhand\r\n")
-                wezterm.sleep_ms(300)
-                pane:send_text("root$!^&/2022@inhand\r\n")
-                window:active_tab():set_title("SSH->512")
-            end),
-        },
-        {
-            brief = "SSH Login 954C",
-            icon = "md_login",
-            action = wezterm.action_callback(function(window, pane)
-                pane:send_text("ssh admin@192.168.2.1\r")
-                wezterm.sleep_ms(1000)
-                pane:send_text("admin@123\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("inhand\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("64391099@inhand\r\n")
-                window:active_tab():set_title("SSH->954C")
-            end),
-        },
-        {
-            brief = "Telnet Login 954C",
-            icon = "md_login",
-            action = wezterm.action_callback(function(window, pane)
-                pane:send_text("telnet 192.168.2.1 23\r")
-                wezterm.sleep_ms(1000)
-                pane:send_text("admin\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("admin@123\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("inhand\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("64391099@inhand\r\n")
-                window:active_tab():set_title("Telnet->954C")
-            end),
-        },
-        {
-            brief = "Dtu Log",
-            icon = "md_math_log",
-            action = wezterm.action_callback(function(window, pane)
-                pane:send_text("tail -f /var/log/messages\r\n")
-            end),
-        },
+        -- {
+        --     brief = "SSH Login 512",
+        --     icon = "md_login",
+        --     action = wezterm.action_callback(function(window, pane)
+        --         pane:send_text("ssh admin@192.168.225.1\r")
+        --         wezterm.sleep_ms(1000)
+        --         pane:send_text("admin@123\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("support enable\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("inhand\r\n")
+        --         wezterm.sleep_ms(300)
+        --         pane:send_text("root$!^&/2022@inhand\r\n")
+        --         window:active_tab():set_title("SSH->512")
+        --     end),
+        -- },
+        -- {
+        --     brief = "SSH Login 954C",
+        --     icon = "md_login",
+        --     action = wezterm.action_callback(function(window, pane)
+        --         pane:send_text("ssh admin@192.168.2.1\r")
+        --         wezterm.sleep_ms(1000)
+        --         pane:send_text("admin@123\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("inhand\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("64391099@inhand\r\n")
+        --         window:active_tab():set_title("SSH->954C")
+        --     end),
+        -- },
+        -- {
+        --     brief = "Telnet Login 954C",
+        --     icon = "md_login",
+        --     action = wezterm.action_callback(function(window, pane)
+        --         pane:send_text("telnet 192.168.2.1 23\r")
+        --         wezterm.sleep_ms(1000)
+        --         pane:send_text("admin\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("admin@123\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("inhand\r\n")
+        --         wezterm.sleep_ms(500)
+        --         pane:send_text("64391099@inhand\r\n")
+        --         window:active_tab():set_title("Telnet->954C")
+        --     end),
+        -- },
+        -- {
+        --     brief = "Dtu Log",
+        --     icon = "md_math_log",
+        --     action = wezterm.action_callback(function(window, pane)
+        --         pane:send_text("tail -f /var/log/messages\r\n")
+        --     end),
+        -- },
         {
             brief = "Show Shell Color ",
             icon = "cod_symbol_color",
