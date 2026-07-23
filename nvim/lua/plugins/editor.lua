@@ -24,7 +24,35 @@ return {
         "keaising/im-select.nvim",
         event = "VeryLazy",
         config = function()
-            require("im_select").setup({})
+            local default_im = "1033"
+            local default_cmd = "im-select"
+
+            if utils.is_windows() then
+                default_cmd = "im-select"
+                default_im = "1033"
+            elseif utils.is_linux() then
+                if vim.fn.has("wsl") == 1 and vim.fn.executable("im-select.exe") == 1 then
+                    default_cmd = "im-select.exe"
+                    default_im = "1033"
+                elseif vim.fn.executable("fcitx5-remote") == 1 then
+                    default_cmd = "fcitx5-remote"
+                    default_im = "keyboard-us"
+                elseif vim.fn.executable("fcitx-remote") == 1 then
+                    default_cmd = "fcitx-remote"
+                    default_im = "1"
+                elseif vim.fn.executable("ibus") == 1 then
+                    default_cmd = "ibus"
+                    default_im = "xkb:us::eng"
+                end
+            end
+
+            -- Only setup when the CLI tool is actually available
+            if vim.fn.executable(default_cmd) == 1 then
+                require("im_select").setup({
+                    default_im_select = default_im,
+                    default_command = default_cmd,
+                })
+            end
         end,
     },
 
