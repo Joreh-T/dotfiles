@@ -1019,24 +1019,87 @@ function M.text_save() vim.cmd.write() end
 function M.text_copy() vim.cmd([[normal! "+y]]) end
 function M.text_paste() vim.api.nvim_paste(vim.fn.getreg("+"), true, -1) end
 
----@param opts { on_success?: fun(), on_fail?: fun() }
+---@param opts? { on_success?: fun(), on_fail?: fun() }
 function M.switch_to_english(opts)
     opts = opts or {}
-    local ENGLISH_ID = "1033"
-    if not (vim.fn.executable("im-select") == 1 and M.is_windows()) then
+
+    local cmd = nil
+    local args = {}
+    local verify_args = nil
+    local match_target = nil
+
+    if M.is_windows() then
+        if vim.fn.executable("im-select") == 1 then
+            cmd = "im-select"
+        elseif vim.fn.executable("im-select.exe") == 1 then
+            cmd = "im-select.exe"
+        end
+        if cmd then
+            args = { "1033" }
+            verify_args = {}
+            match_target = "1033"
+        end
+    elseif M.is_linux() then
+        if vim.fn.has("wsl") == 1 and vim.fn.executable("im-select.exe") == 1 then
+            cmd = "im-select.exe"
+            args = { "1033" }
+            verify_args = {}
+            match_target = "1033"
+        elseif vim.fn.executable("fcitx5-remote") == 1 then
+            cmd = "fcitx5-remote"
+            args = { "-c" }
+            verify_args = { "-n" }
+            match_target = "keyboard%-us"
+        elseif vim.fn.executable("fcitx-remote") == 1 then
+            cmd = "fcitx-remote"
+            args = { "-c" }
+            verify_args = { "-s" }
+            match_target = "1"
+        elseif vim.fn.executable("ibus") == 1 then
+            cmd = "ibus"
+            args = { "engine", "xkb:us::eng" }
+        end
+    end
+
+    if not cmd then
         if opts.on_fail then opts.on_fail() end
         return
     end
+
+    local exec_args = { cmd }
+    for _, a in ipairs(args) do
+        table.insert(exec_args, a)
+    end
+
     -- Step 1: switch to English
-    vim.system({ "im-select.exe", ENGLISH_ID }, nil, function(switch_result)
+    vim.system(exec_args, nil, function(switch_result)
         if switch_result.code ~= 0 then
             if opts.on_fail then opts.on_fail() end
             return
         end
+
+        if not verify_args then
+            if opts.on_success then opts.on_success() end
+            return
+        end
+
         -- Step 2: read back to verify
-        vim.system({ "im-select.exe" }, { text = true }, function(query_result)
-            if query_result.code == 0 and query_result.stdout:match(ENGLISH_ID) then
-                if opts.on_success then opts.on_success() end
+        local query_cmd = { cmd }
+        for _, va in ipairs(verify_args) do
+            table.insert(query_cmd, va)
+        end
+
+        vim.system(query_cmd, { text = true }, function(query_result)
+            if query_result.code == 0 then
+                if match_target then
+                    if query_result.stdout:match(match_target) or (cmd == "fcitx5-remote" and query_result.stdout:match("1")) then
+                        if opts.on_success then opts.on_success() end
+                    else
+                        if opts.on_fail then opts.on_fail() end
+                    end
+                else
+                    if opts.on_success then opts.on_success() end
+                end
             else
                 if opts.on_fail then opts.on_fail() end
             end
