@@ -9,6 +9,9 @@ declare -A LINKS=(
     ["$DOTFILES_DIR/yazi"]="$HOME/.config/yazi"
     ["$DOTFILES_DIR/wezterm"]="$HOME/.config/wezterm"
     ["$DOTFILES_DIR/vim/.vimrc"]="$HOME/.vimrc"
+    ["$DOTFILES_DIR/zsh/.zshrc"]="$HOME/.zshrc"
+    ["$DOTFILES_DIR/zsh/.p10k.zsh"]="$HOME/.p10k.zsh"
+    ["$DOTFILES_DIR/zsh/.zshenv"]="$HOME/.zshenv"
 )
 
 echo "Creating symlinks..."
