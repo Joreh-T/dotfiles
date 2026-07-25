@@ -111,11 +111,7 @@ if vim.g.neovide then
         return false
     end
 
-    if is_version_leq("0.15.0") then
-        vim.g.neovide_transparency = 0.99
-    else
-        vim.g.neovide_opacity = 0.98
-    end
+    vim.g.neovide_opacity = 1
 
     vim.g.snacks_animate = false
     vim.g.neovide_title_background_color = "#2a2f38"
@@ -126,7 +122,7 @@ if vim.g.neovide then
     if utils.is_windows() then   --
         vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h13.5"
     else
-        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h17"
+        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h17.5"
     end
     -- vim.o.guifont = "Cascadia Code:h12:style=Regular,Segoe UI Emoji:h12"
     vim.g.neovide_ligatures = true -- Enable ligature effects
