@@ -2,7 +2,7 @@
 local uv = vim.uv or vim.loop
 
 _G.SYSTEM_NAME = (uv.os_uname().sysname):lower()
-_G.MASON_BIN_PATH = vim.fn.stdpath("data") .. "/mason/bin" -- Can't work in Windows
+-- _G.MASON_BIN_PATH = vim.fn.stdpath("data") .. "/mason/bin" -- Can't work in Windows
 
 local function detect_windows_version()
     if vim.fn.has("win32") ~= 1 then return nil end

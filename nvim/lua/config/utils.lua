@@ -16,6 +16,29 @@ end
 
 ------------------------ End Of OS Info ------------------------
 
+------------------------ clangd binary detection ------------------------
+--- Return the clangd binary for the project containing `path` (a file, dir or bufnr).
+--- Reads the first line of the nearest `.nvim-clangd` found by walking upward from
+--- `path`; falls back to the system `clangd`. Called once per session (first C/C++
+--- project file) by the lspconfig FileType hook in plugins/lsp.lua, so detection uses
+--- the file's real project root, not the dir nvim was launched from.
+function M.detect_specified_clangd(path)
+    local root = vim.fs.root(path, { ".nvim-clangd" })
+    if root then
+        local f = vim.fs.joinpath(root, ".nvim-clangd")
+        if vim.fn.filereadable(f) == 1 then
+            local line = (vim.fn.readfile(f)[1] or "")
+                :gsub("^\239\187\191", "") -- strip UTF-8 BOM (some Windows editors add it)
+                :gsub("^%s+", "")
+                :gsub("%s+$", "")
+            if line ~= "" then
+                return line
+            end
+        end
+    end
+    return "clangd"
+end
+
 ----------------------- NVIM version Check --------------------
 -- 0.10.4
 -- │  │ └── patch version
