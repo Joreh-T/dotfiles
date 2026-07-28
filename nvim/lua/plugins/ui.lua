@@ -1,8 +1,7 @@
 -- if true then return {} end
 local utils = require("config.utils")
 
-local screen_width = vim.o.columns
-local center_indent = math.floor((screen_width - 78) / 2) -- Try to center the snacks header as much as possible
+
 
 return {
     {
@@ -58,15 +57,15 @@ return {
                     -- ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝]],
 
                     header = [[
-                                                                         
-           ████ ██████           █████      ██                     
-          ███████████             █████                             
-          █████████ ███████████████████ ███   ███████████   
-         █████████  ███    █████████████ █████ ██████████████   
-        █████████ ██████████ █████████ █████ █████ ████ █████   
-      ███████████ ███    ███ █████████ █████ █████ ████ █████  
-     ██████  █████████████████████ ████ █████ █████ ████ ██████ 
-          ]],
+                                                                   
+      ████ ██████           █████      ██                    
+     ███████████             █████                            
+     █████████ ███████████████████ ███   ███████████  
+    █████████  ███    █████████████ █████ ██████████████  
+   █████████ ██████████ █████████ █████ █████ ████ █████  
+ ███████████ ███    ███ █████████ █████ █████ ████ █████ 
+██████  █████████████████████ ████ █████ █████ ████ ██████
+]],
                     keys = {
                         {
                             icon = " ",
@@ -128,12 +127,55 @@ return {
                     },
                 },
                 sections = {
-                    {
-                        section = "header",
-                        height = 8,
-                        padding = 3, -- Spacing from below
-                        indent = center_indent, -- Spacing from left
-                    },
+                    function(self)
+                        local pane_gap = self.opts.pane_gap or 4
+                        local width = self.opts.width or 60
+
+                        -- 1. Dynamically calculate the actual maximum width of the ASCII art header.
+                        -- This allows it to stay perfectly centered even if you edit the art later.
+                        local header_text = self.opts.preset.header
+                        local text_width = 0
+                        if type(header_text) == "string" then
+                            for _, line in ipairs(vim.split(header_text, "\n", { plain = true })) do
+                                text_width = math.max(text_width, vim.api.nvim_strwidth(line))
+                            end
+                        end
+                        if text_width == 0 then text_width = 66 end -- fallback
+
+                        local W = self._size.width
+                        -- 2. Calculate the absolute left padding required to center the text on the screen.
+                        local target_pad = math.max(0, math.floor((W - text_width) / 2))
+
+                        -- 3. Emulate snacks.nvim's internal layout calculation to find Pane 1's starting column (self_col).
+                        local max_panes = math.max(1, math.floor((W + pane_gap) / (width + pane_gap)))
+                        local actual_panes = math.min(max_panes, 2) -- we only use up to 2 panes in this config
+                        local self_col = math.floor((W - (width * actual_panes + pane_gap * (actual_panes - 1))) / 2)
+
+                        -- 4. Bypass snacks.nvim's negative clamping bug.
+                        -- snacks.nvim tries to prepend `self.col - shift` spaces to center oversized blocks.
+                        -- But if `self.col - shift <= 0`, Lua's `string.rep` silently returns `""` (0 spaces),
+                        -- which aggressively clamps the text to the left and pushes it out of center.
+                        local indent = 0
+                        local shift = math.floor((target_pad + text_width - width) / 2)
+                        if self_col - shift <= 0 then
+                            vim.notify("shift < 0")
+                            -- If it clamps, the start position is forced to 0. 
+                            -- So `indent` literally becomes the absolute padding.
+                            indent = target_pad
+                        else
+                            -- If it doesn't clamp, snacks will prepend `self.col - shift` spaces.
+                            -- We solve for the `indent` that makes `self.col - shift + indent == target_pad`.
+                            indent = W - 2 * self_col - width
+                        end
+
+                        return {
+                            section = "header",
+                            height = 8,
+                            padding = 3,
+                            align = "center",
+                            indent = indent,
+                        }
+                    end,
                     -- {
                     --   pane = 2,
                     --   section = "terminal",
