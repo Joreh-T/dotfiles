@@ -501,7 +501,7 @@ return {
                 HACK = { icon = "🧪", color = "warning" },
                 WARN = { icon = "🧯", color = "warning", alt = { "WARNING", "WARN_N", "WARN" } },
                 PERF = { icon = "🚩", color = "info", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
-                NOTE = { icon = "💡", color = "hint", alt = { "INFO", "INFO_N", "HINT_N", "HINT" } },
+                NOTE = { icon = "💡", color = "hint", alt = { "INFO", "INFO_N", "HINT_N", "HINT", "NOTE", "NOTE_N" } },
                 -- TEST = { icon = "⏲ ", color = "test", alt = { "TESTING", "PASSED", "FAILED", "TEST_Q" } },
             },
             gui_style = {

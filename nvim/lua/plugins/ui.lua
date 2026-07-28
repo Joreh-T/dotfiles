@@ -28,7 +28,6 @@ return {
                     "RainbowDelimiterGreen",
                     "RainbowDelimiterBlue",
                     "RainbowDelimiterViolet",
-                    "RainbowDelimiterCyan",
                 },
             }
         end,
@@ -202,18 +201,7 @@ return {
                     char = "│",
                     only_scope = false, -- only show indent guides of the scope
                     only_current = false, -- only show indent guides in the current window
-                    -- hl = "SnacksIndent", ---@type string|string[] hl groups for indent guides
-                    -- can be a list of hl groups to cycle through
-                    -- hl = {
-                    --     "SnacksIndent1",
-                    --     "SnacksIndent2",
-                    --     "SnacksIndent3",
-                    --     "SnacksIndent4",
-                    --     "SnacksIndent5",
-                    --     "SnacksIndent6",
-                    --     "SnacksIndent7",
-                    --     "SnacksIndent8",
-                    -- },
+                    hl = "SnacksIndent",
                 },
                 scope = {
                     enabled = true, -- enable highlighting the current scope
@@ -221,14 +209,7 @@ return {
                     char = "│",
                     underline = false, -- underline the start of the scope
                     only_current = false, -- only show scope in the current window
-                    hl = {
-                        "RainbowDelimiterYellow",
-                        "RainbowDelimiterOrange",
-                        "RainbowDelimiterGreen",
-                        "RainbowDelimiterBlue",
-                        "RainbowDelimiterViolet",
-                        "RainbowDelimiterCyan",
-                    },
+                    hl = "SnacksIndentScope",
                 },
             },
             styles = {
