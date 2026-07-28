@@ -811,20 +811,15 @@ return {
                     vim.cmd("Outline")
 
                     vim.schedule(function()
-                    -- vim.defer_fn(function()
-                        -- When there are already two(or more) valid reading windows, 
-                        -- outline is turned off by default to obtain the best look and feel.
+                        -- Note: We must check the window count inside `vim.schedule` rather than before `vim.cmd("Outline")`.
+                        -- During session restore or multi-file open, `BufWinEnter` fires for the first buffer while
+                        -- the other windows are not fully loaded yet (valid_count is 1). By checking in the next tick,
+                        -- all windows will have loaded. If there are > 1 windows, `OutlineClose` will gracefully abort 
+                        -- the pending async outline creation to obtain the best look and feel.
                         if utils.get_valid_win_count() > 1 then
                             vim.cmd("OutlineClose")
                         end
                     end)
-                    -- end, 50)
-
-                    -- vim.api.nvim_del_autocmd(args.id)
-                    -- vim.defer_fn(function()
-                    --     utils.focus_largest_window()
-                    -- end, 50)
-                    -- end)
                 end,
             })
         end,
