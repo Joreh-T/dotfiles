@@ -266,6 +266,39 @@ function M.is_current_window_ft(filetype_pattern, use_pattern_regex)
     end
 end
 
+function M.get_valid_win_count()
+    local valid_count = 0
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+
+    for _, win_id in ipairs(wins) do
+        -- 1. Basic check: Ensure the window is still valid and not accidentally destroyed
+        if vim.api.nvim_win_is_valid(win_id) then
+
+            local config = vim.api.nvim_win_get_config(win_id)
+            local buf_id = vim.api.nvim_win_get_buf(win_id)
+            local buftype = vim.bo[buf_id].buftype
+
+            -- 2. Core blocking rules:
+            -- rule A: config.relative == ""  -> Must be a normal split window, exclude all floating windows
+            -- rule B: buftype == ""          -> Must be a normal text buffer, exclude sidebars (nofile), terminals (terminal), Quickfix, etc.
+            if config.relative == "" and buftype == "" then
+                -- 3. Advanced "non-empty" check (optional):
+                -- If your definition of "non-empty" means that "a newly created, unsaved [No Name] empty Buffer is also not considered a valid window",
+                -- you can uncomment the following 4 lines:
+                -- local filename = vim.api.nvim_buf_get_name(buf_id)
+                -- local line_count = vim.api.nvim_buf_line_count(buf_id)
+                -- if filename ~= "" or line_count > 1 then
+
+                valid_count = valid_count + 1
+
+                -- end
+            end
+        end
+    end
+
+    return valid_count
+end
+
 ------------------------ Avante ------------------------
 -- Check if there's a window with filetype starting with Avante
 function M.has_avante_window()

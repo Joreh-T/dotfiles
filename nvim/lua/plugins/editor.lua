@@ -796,11 +796,34 @@ return {
                         return
                     end
 
-                    vim.cmd("Outline")
                     vim.api.nvim_del_autocmd(args.id)
-                    vim.defer_fn(function()
-                        utils.focus_largest_window()
-                    end, 50)
+
+                    vim.api.nvim_create_autocmd("FileType", {
+                        pattern = "Outline",
+                        once = true,
+                        callback = function()
+                            vim.schedule(function()
+                                utils.focus_largest_window()
+                            end)
+                        end,
+                    })
+
+                    vim.cmd("Outline")
+
+                    vim.schedule(function()
+                    -- vim.defer_fn(function()
+                        -- When there are already two(or more) valid reading windows, 
+                        -- outline is turned off by default to obtain the best look and feel.
+                        if utils.get_valid_win_count() > 1 then
+                            vim.cmd("OutlineClose")
+                        end
+                    end)
+                    -- end, 50)
+
+                    -- vim.api.nvim_del_autocmd(args.id)
+                    -- vim.defer_fn(function()
+                    --     utils.focus_largest_window()
+                    -- end, 50)
                     -- end)
                 end,
             })
