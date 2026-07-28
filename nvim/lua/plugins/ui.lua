@@ -1,8 +1,6 @@
 -- if true then return {} end
 local utils = require("config.utils")
 
-
-
 return {
     {
         "HiPhish/rainbow-delimiters.nvim",
@@ -158,7 +156,7 @@ return {
                         local indent = 0
                         local shift = math.floor((target_pad + text_width - width) / 2)
                         if self_col - shift <= 0 then
-                            vim.notify("shift < 0")
+                            -- vim.notify("shift < 0")
                             -- If it clamps, the start position is forced to 0. 
                             -- So `indent` literally becomes the absolute padding.
                             indent = target_pad
@@ -184,18 +182,24 @@ return {
                     --
                     --     return width >= 120
                     --   end,
-                    --   cmd = "pokemon-colorscripts -n pikachu --no-title; sleep .2", -- 运行终端命令
+                    --   cmd = "pokemon-colorscripts -n pikachu --no-title; sleep .2",
                     --   random = 10,
                     --   padding = 0,
                     --   indent = 6,
                     --   height = 12,
                     -- },
-                    {
-                        pane = 2,
-                        section = nil,
-                        padding = 11,
-                    },
-                    { section = "keys", gap = 1, padding = 1 },
+                    function(self)
+                        local pane_gap = self.opts.pane_gap or 4
+                        local width = self.opts.width or 60
+                        local W = self._size.width
+                        local max_panes = math.max(1, math.floor((W + pane_gap) / (width + pane_gap)))
+                        local actual_panes = math.min(max_panes, 2)
+                        return {
+                            pane = 2,
+                            padding = actual_panes == 1 and 1 or 11,
+                        }
+                    end,
+                    { section = "keys", gap = 1, indent = 2, padding = 1 },
                     {
                         pane = 2,
                         icon = " ",

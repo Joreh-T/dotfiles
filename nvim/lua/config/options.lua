@@ -113,7 +113,7 @@ if vim.g.neovide then
 
     vim.g.neovide_opacity = 1
 
-    vim.g.snacks_animate = false
+    -- vim.g.snacks_animate = false
     vim.g.neovide_title_background_color = "#2a2f38"
     vim.g.neovide_theme = 'bg_color'
     -- string.format(
@@ -122,7 +122,7 @@ if vim.g.neovide then
     if utils.is_windows() then   --
         vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h13.5"
     else
-        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h17.5"
+        vim.o.guifont = "Maple Mono CN,JetBrainsMono Nerd Font,Segoe_UI_Emoji:h16.5"
     end
     -- vim.o.guifont = "Cascadia Code:h12:style=Regular,Segoe UI Emoji:h12"
     vim.g.neovide_ligatures = true -- Enable ligature effects
