@@ -89,6 +89,19 @@ return {
         -- Fuzzy finder for nvim. Replaced telescope.nvim
         "ibhagwan/fzf-lua",
         -- event = "VeryLazy",
+        -- The following init configuration is used to temporarily suppress repeated registration prompts "vim.ui.select already registered to fzf-lua"
+        -- fzf-lua has registered itself before lazyvim
+        init = function()
+            LazyVim.on_very_lazy(function()
+                vim.ui.select = function(...)
+                    require("lazy").load({ plugins = { "fzf-lua" } })
+                    local opts = LazyVim.opts("fzf-lua") or {}
+                    require("fzf-lua").register_ui_select(opts.ui_select or nil, true)
+                    return vim.ui.select(...)
+                end
+            end)
+        end,
+
         keys = {
             { "<leader>/", LazyVim.pick("live_grep", { root = false }), desc = "Grep (cwd)" },
             -- { "<leader>/", LazyVim.pick("grep_project"), desc = "Fuzzy search (project)" },
