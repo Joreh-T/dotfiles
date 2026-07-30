@@ -678,11 +678,7 @@ wezterm.on("augment-command-palette", function(window, pane)
             icon = "md_login",
             action = wezterm.action_callback(function(window, pane)
                 pane:send_text("ssh root@192.168.124.22\r")
-                wezterm.sleep_ms(1200)
-                pane:send_text("root\r\n")
-                wezterm.sleep_ms(500)
-                pane:send_text("HZFVision2024\r\n")
-                window:active_tab():set_title("TDA4")
+                window:active_tab():set_title("ssh@TDA4")
             end),
         },
         {
@@ -694,7 +690,7 @@ wezterm.on("augment-command-palette", function(window, pane)
                 pane:send_text("ams\r\n")
                 wezterm.sleep_ms(500)
                 pane:send_text("HZFVision2024\r\n")
-                window:active_tab():set_title("NX-C")
+                window:active_tab():set_title("ssh@NX-C")
             end),
         },
         -- {
