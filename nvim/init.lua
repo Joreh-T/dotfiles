@@ -52,13 +52,40 @@ else
 end
 
 -- vim.lsp.enable({'clangd'})
-
 local lsp_log_path = vim.fn.stdpath("state") .. "/lsp.log"
 if vim.fn.filereadable(lsp_log_path) == 1 then
     os.remove(lsp_log_path)
     -- vim.notify("Removed LSP log file: " .. log_path, vim.log.levels.INFO)
 else
     -- vim.notify("LSP log file does not exist: " .. log_path, vim.log.levels.INFO)
+end
+
+-- GUI-launched nvim (e.g. Neovide opened from a desktop entry) doesn't inherit the
+-- login shell's $PATH, so shell-managed tools like node (via fnm/nvm) aren't found.
+-- Only when a shell-installed tool is missing, merge the login shell's PATH in before
+-- plugins load. The spawned login shell re-sources ~/.zshrc (starting fnm/nvm/etc.);
+-- its session dirs persist while nvim runs, so the captured paths stay valid.
+-- Windows uses a different mechanism (PATH via environment), so it's skipped here.
+if not utils.is_windows() and vim.fn.executable("node") ~= 1 then
+    local shell = vim.fn.executable("zsh") == 1 and "zsh" or "bash"
+    local res = vim.fn.system(shell .. " -lic 'echo $PATH' 2>/dev/null")
+    if res ~= "" then
+        local shell_path = vim.trim(res)
+        local seen = {}
+        for p in (vim.env.PATH or ""):gmatch("[^:]+") do
+            seen[p] = true
+        end
+        local parts = {}
+        for entry in shell_path:gmatch("[^:]+") do
+            if not seen[entry] then
+                table.insert(parts, entry)
+                seen[entry] = true
+            end
+        end
+        if #parts > 0 then
+            vim.env.PATH = table.concat(parts, ":") .. ":" .. (vim.env.PATH or "")
+        end
+    end
 end
 
 if utils.is_windows() then

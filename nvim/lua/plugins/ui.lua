@@ -617,6 +617,7 @@ return {
             --   cond = require("lazy.status").has_updates,
             --   color = function() return { fg = Snacks.util.color("Special") } end,
             -- },
+            {"lsp_status"},
             {
                 "diff",
                 symbols = {
@@ -653,7 +654,15 @@ return {
                 },
                 {"fileformat"},
                 { "progress", separator = " ", padding = { left = 0, right = 0 } },
-                { "location", padding = { left = 0, right = 1 } },
+                -- { "location", padding = { left = 0, right = 1 } },
+                { "datetime",
+                    style = "%H:%M",
+                    padding = { left = 0, right = 1 }
+                    -- color = {
+                        -- fg = "#759d57", 
+                        -- bg = "#79C5C3"
+                    -- },
+                }
             }
             opts.sections.lualine_z = {}
 
