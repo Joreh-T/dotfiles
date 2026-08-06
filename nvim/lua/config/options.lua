@@ -17,7 +17,7 @@ vim.opt.number = true
 vim.opt.jumpoptions = "stack"
 vim.opt.nrformats = "bin,hex,octal,alpha" -- Enable binary, hexadecimal, octal, and alphabetical number formats
 vim.opt.fileencodings = { "utf-8", "gbk", "gb2312",  "utf-16le", "big5", "euc-jp", "euc-kr", "latin1" }
-
+vim.opt.modeline = false
 vim.g.maplocalleader = ';'
 ---------------------------------------------------------------------
 if not utils.is_windows() then
