@@ -13,6 +13,14 @@ environment {
     XMODIFIERS "@im=fcitx"
 }
 
+// XWayland via xwayland-satellite, so X11-only apps (STM32CubeMX etc.) can run.
+// niri's auto-integration resolves this in ITS OWN process PATH (login-manager,
+// which does NOT include ~/.local/bin), not the environment block above —
+// so point it at the full path here. Reloading config activates it.
+xwayland-satellite {
+    path "/home/joreh/.local/bin/xwayland-satellite"
+}
+
 // Input device configuration.
 // Find the full list of options on the wiki:
 // https://niri-wm.github.io/niri/Configuration:-Input
