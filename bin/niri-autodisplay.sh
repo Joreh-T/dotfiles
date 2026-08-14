@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Auto-switch built-in laptop panel (eDP-1) based on EXTERNAL monitors.
 #
-# Rule (vendor-based, verified by EDID ASCII name):
+# Rule (vendor-based, verified by EDID PNP code + ASCII name):
 #   - AOC (Q27G2S) or SKYDATA (F27B40Q) connected  → turn built-in eDP-1 OFF
 #   - Redmi (Xiaomi, "Redmi 27 NQ") connected       → KEEP built-in ON (works together)
 #   - No external connected                          → turn built-in eDP-1 ON
 #
-# We identify each external by reading its EDID ASCII name (strings), which is
-# more reliable than the niri output name (niri caches EDID-derived names and
-# can show a stale name right after hotplug) or the connector port (Redmi may
-# share a port with AOC).
+# Identify each external by the EDID PNP manufacturer code (bytes 8-9), with the
+# EDID ASCII name as fallback. The ASCII name alone is unreliable — e.g. the
+# SKYDATA F27B40Q's EDID only contains "F27B40Q", not "SKYDATA". We avoid the
+# niri output name (can be stale right after hotplug) and the connector port
+# (Redmi shares a port with AOC).
 #
 # Uses POLLING of /sys/class/drm/*/status every 2s. (udevadm monitor piped to
 # while-read is block-buffered and drops events; don't use it.)
@@ -21,7 +22,9 @@ NIRI_BIN="$(command -v niri || echo /usr/bin/niri)"
 POLL_SECONDS="${POLL_SECONDS:-2}"
 
 # External monitors that TRIGGER turning the built-in off (AOC / SKYDATA).
-# Redmi is intentionally NOT here — it keeps the built-in panel on.
+# Matched by EDID PNP code (primary) and ASCII name (fallback).
+# Redmi (PNP "XMI") is intentionally NOT here — it keeps the built-in panel on.
+TRIGGER_PNPS="AOC SKY"
 TRIGGER_NAMES="AOC SKYDATA"
 
 # Is the built-in output currently enabled in niri? ("Disabled" => off)
@@ -33,20 +36,37 @@ builtin_is_on() {
   '
 }
 
-# Return 1 if any connected external matches a TRIGGER_NAMES vendor, else 0.
+# Decode the 3-letter EDID manufacturer (PNP) ID from a raw edid file.
+edid_pnp() {
+  python3 -c '
+import sys
+d = open(sys.argv[1], "rb").read()
+if len(d) < 10:
+    sys.exit(1)
+b8, b9 = d[8], d[9]
+c1 = chr(0x41 + ((b8 >> 2) & 0x1f) - 1)
+c2 = chr(0x41 + (((b8 & 0x03) << 3) | ((b9 >> 5) & 0x07)) - 1)
+c3 = chr(0x41 + (b9 & 0x1f) - 1)
+print(c1 + c2 + c3)
+' "$1" 2>/dev/null
+}
+
+# Return 1 if any connected external is a trigger monitor, else 0.
+# Trigger = PNP code in $TRIGGER_PNPS, or EDID ASCII name matching $TRIGGER_NAMES.
 any_trigger_external() {
   for f in /sys/class/drm/card1-DP-*/status; do
     [[ -f "$f" ]] || continue
     [[ "$(cat "$f")" == "connected" ]] || continue
     local edid="${f%/status}/edid"
     [[ -f "$edid" ]] || continue
-    local name
+    local pnp name
+    pnp="$(edid_pnp "$edid")"
     name="$(strings "$edid" 2>/dev/null | grep -iE 'AOC|SKYDATA|Redmi' | head -1)"
+    for trig in $TRIGGER_PNPS; do
+      [[ "$pnp" == "$trig" ]] && { echo 1; return; }
+    done
     for trig in $TRIGGER_NAMES; do
-      if [[ "$name" == *"$trig"* ]]; then
-        echo 1
-        return
-      fi
+      [[ "$name" == *"$trig"* ]] && { echo 1; return; }
     done
   done
   echo 0
