@@ -662,8 +662,8 @@ binds {
 
     // Clipboard history via fuzzel + cliphist.
     Super+Alt+V { spawn-sh "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
-    // Power menu via fuzzel.
-    Mod+P { spawn-sh "~/.config/niri/scripts/power-menu.sh"; }
+    // Power menu via Noctalia session panel.
+    Mod+P { spawn "noctalia" "msg" "panel-open" "session"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
