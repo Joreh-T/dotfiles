@@ -14,6 +14,7 @@ declare -A LINKS=(
     ["$DOTFILES_DIR/zsh/.zshenv"]="$HOME/.zshenv"
     ["$DOTFILES_DIR/niri"]="$HOME/.config/niri"
     ["$DOTFILES_DIR/noctalia"]="$HOME/.config/noctalia"
+    ["$DOTFILES_DIR/bin/niri-autodisplay.sh"]="$HOME/.local/bin/niri-autodisplay.sh"
 )
 
 echo "Creating symlinks..."
