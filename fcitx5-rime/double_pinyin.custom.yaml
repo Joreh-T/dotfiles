@@ -1,6 +1,7 @@
 patch:
-  # Force simplified Chinese output (traditionalization switch to 汉字).
-  "switches/@2/reset": 1
+  # Default to simplified Chinese: switch @2 is "traditionalization"
+  # with states [汉字, 漢字]; reset 0 = 汉字 (simplified), 1 = 漢字 (traditional).
+  "switches/@2/reset": 0
   "switches/@2/states": ["汉字", "漢字"]
   # ascii_composer: CapsLock must do traditional caps-lock (大写), never switch
   # to English. English is handled by fcitx5's keyboard-us input method.

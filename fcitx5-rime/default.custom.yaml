@@ -3,7 +3,10 @@ patch:
     - schema: double_pinyin
   "menu/page_size": 5
   "switches/@0/reset": 0        # ascii_mode: 0 = 中文模式
-  "switches/@2/reset": 1        # simplification: 1 = 汉字(简体输出)
+  "switches/@2/reset": 0        # traditionalization: 0 = 汉字(简体输出); 1 would be 漢字(繁体)
+  # Remove Control+Shift+4 / Control+Shift+dollar (toggle traditionalization).
+  "key_binder/bindings/@8": ~
+  "key_binder/bindings/@9": ~
 __patch:
 # Rx: iDvel/rime-ice:others/recipes/config:schema=double_pinyin {
   - patch/+:
