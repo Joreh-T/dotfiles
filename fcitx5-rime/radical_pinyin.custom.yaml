@@ -1,0 +1,7 @@
+__patch:
+# Rx: iDvel/rime-ice:others/recipes/config:schema=double_pinyin {
+  - patch/+:
+      speller/algebra:
+        __include: radical_pinyin.schema.yaml:/algebra_double_pinyin
+
+# }

@@ -15,6 +15,12 @@ declare -A LINKS=(
     ["$DOTFILES_DIR/niri"]="$HOME/.config/niri"
     ["$DOTFILES_DIR/noctalia"]="$HOME/.config/noctalia"
     ["$DOTFILES_DIR/bin/niri-autodisplay.sh"]="$HOME/.local/bin/niri-autodisplay.sh"
+    ["$DOTFILES_DIR/fcitx5/config"]="$HOME/.config/fcitx5/config"
+    ["$DOTFILES_DIR/fcitx5/profile"]="$HOME/.config/fcitx5/profile"
+    ["$DOTFILES_DIR/fcitx5-rime/default.custom.yaml"]="$HOME/.local/share/fcitx5/rime/default.custom.yaml"
+    ["$DOTFILES_DIR/fcitx5-rime/double_pinyin.custom.yaml"]="$HOME/.local/share/fcitx5/rime/double_pinyin.custom.yaml"
+    ["$DOTFILES_DIR/fcitx5-rime/melt_eng.custom.yaml"]="$HOME/.local/share/fcitx5/rime/melt_eng.custom.yaml"
+    ["$DOTFILES_DIR/fcitx5-rime/radical_pinyin.custom.yaml"]="$HOME/.local/share/fcitx5/rime/radical_pinyin.custom.yaml"
 )
 
 echo "Creating symlinks..."
