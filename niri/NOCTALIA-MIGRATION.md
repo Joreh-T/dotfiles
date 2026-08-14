@@ -71,7 +71,7 @@
 ### 隔离工具链(不污染系统)
 - `~/noctalia-deps/`: sdbus-c++ v2.3.1 隔离安装(头文件+libs+pkg-config)
 - `~/.local/bin/noctalia`: 编译产物(27MB)
-- `~/src/noctalia`: 源码 + 补丁
+- `~/workspaces/window_mananger_ui/noctalia`: 源码 + 补丁
 
 ### 系统级覆盖(记录在案)
 - `systemctl --user mask waybar.service` → waybar 不自动启动
@@ -80,36 +80,3 @@
 
 ---
 
-## 四、git 提交记录(本次适配)
-
-```
-46c2a24 docs: record autostart overrides (nm-applet, waybar)
-e903fba fix(niri): add ~/.local/bin to PATH via environment block (root cause)
-971d32b feat(niri): bind Mod+Space/Mod+D to noctalia launcher, Super+Alt+L to lock
-e1b08ad feat(niri): noctalia sole shell — remove dunst/swayidle/cliphist/polkit spawns
-c98eb2a feat(niri): noctalia sole bar (absolute path), remove waybar spawn
-a9b2134 fix(niri): external monitors scale 1.0
-cd7276a feat(niri): 3-monitor config (eDP-1 1.75, DP-1/DP-2 1.25→1.0)
-026cbd2 feat(noctalia): catppuccin config + niri autostart (later reverted to default theme)
-34aa542 chore: record noctalia build deps
-65f023a docs: noctalia adoption plan
-```
-
----
-
-## 五、回滚方式
-
-- **还原配置**: `git -C ~/.config/niri checkout pre-noctalia`(回到 Catppuccin waybar 版)
-- **卸载 Noctalia**: 删 `~/.local/bin/noctalia`、`~/.config/noctalia/`、`~/noctalia-deps/`、`~/src/noctalia/`
-- **恢复 waybar**: `systemctl --user unmask waybar.service`
-- **恢复 nm-applet**: 删 `~/.config/autostart/nm-applet.desktop`
-- **还原默认编译器**: `apt remove g++-14`(默认 gcc-13 从未被改动)
-
----
-
-## 六、遗留 / 可选项
-
-- **壁纸**: Noctalia 默认壁纸在生效;用户可选 `noctalia msg wallpaper-set` 或 `Mod+Y` 换壁纸
-- **外接屏高刷**: DP-1/DP-2 支持 144Hz,当前跑 60Hz,需要可加 mode
-- **主题切换**: 改 `config.toml` 的 `builtin`(Catppuccin/Ayu/Nord 等),热重载生效
-- **nm-applet**: 若以后需要其网络托盘,删掉覆盖文件即可恢复
