@@ -688,6 +688,15 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
+// Window switcher (recent-windows). Adding a binds{} block removes ALL default
+// binds (incl. Alt+grave which was hijacking nvim). Keep only Alt+Tab here.
+recent-windows {
+    binds {
+        Alt+Tab         { next-window; }
+        Alt+Shift+Tab   { previous-window; }
+    }
+}
+
 // Cursor theme (previously managed via clavis/).
 cursor {
     xcursor-theme "Adwaita"
