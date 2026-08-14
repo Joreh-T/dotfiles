@@ -353,7 +353,7 @@ capsule            = false
 
 start  = ["launcher", "wallpaper", "workspaces"]
 center = ["clock"]
-end    = ["tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
+end    = ["tray", "notifications", "clipboard", "network", "volume", "brightness", "battery", "control-center", "session"]
 # end    = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
 
 # Commands for the bar margin outside widget sections (dead zone):
