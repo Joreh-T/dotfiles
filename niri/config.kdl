@@ -660,8 +660,8 @@ binds {
     // Mod+Space       { switch-layout "next"; }
     // Mod+Shift+Space { switch-layout "prev"; }
 
-    // Clipboard history via fuzzel + cliphist.
-    Super+Alt+V { spawn-sh "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
+    // Clipboard history via Noctalia clipboard panel.
+    Super+Alt+V { spawn "noctalia" "msg" "panel-open" "clipboard"; }
     // Power menu via Noctalia session panel.
     Mod+P { spawn "noctalia" "msg" "panel-open" "session"; }
 
@@ -688,6 +688,8 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
-// BEGIN CLAVIS CURSOR
-include optional=true "clavis/cursor.kdl"
-// END CLAVIS CURSOR
+// Cursor theme (previously managed via clavis/).
+cursor {
+    xcursor-theme "Adwaita"
+    xcursor-size 24
+}
