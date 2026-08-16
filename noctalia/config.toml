@@ -21,7 +21,7 @@ polkit_agent          = false
 password_style        = "default"    # default | random
 settings_show_advanced = true        # show advanced settings by default in Settings
 # settings_window_translucent = false  # translucent settings window background
-show_location         = true         # hide weather location text in shell UI when false
+show_location         = false         # hide weather location text in shell UI when false
 # app_icon_colorize   = false        # recolor application icons across the shell
 # app_icon_color      = "on_surface" # ColorSpec role or #hex when colorize is enabled
 clipboard_enabled     = true         # false disables clipboard panel, history, and compositor clipboard hooks
@@ -54,7 +54,7 @@ direction = "down"                  # center, up, down, left, right, up_left, up
 alpha     = 0.55                    # multiplied by each component's background opacity
 
 [shell.panel]
-transparency_mode     = "glass"     # solid | soft | glass; controls floating-panel opacity and card translucency
+transparency_mode     = "soft"     # solid | soft | glass; controls floating-panel opacity and card translucency
 borders               = true        # panel shell outline and in-panel section cards
 shadow                = true        # cast the global [shell.shadow] from panel surfaces
 launcher_placement       = "floating" # attached | floating
@@ -306,12 +306,12 @@ address          = ""                # e.g. "Toronto, ON"; geocoded when auto_lo
 # pre_action_fade_seconds = 2.0
 
 [idle.behavior.lock]
-timeout = 3000
+timeout = 2000
 action = "lock"
-enabled = false
+enabled = true
 
 [idle.behavior.screen-off]
-timeout = 2900
+timeout = 2360
 action = "screen_off"
 enabled = true
 
@@ -333,9 +333,9 @@ delete   = ["del"]
 [bar.main]
 position           = "top"          # top | bottom | left | right
 thickness          = 40
-background_opacity = 0.8
+background_opacity = 0.7
 radius             = 20
-margin_ends        = 25
+margin_ends        = 0
 margin_edge        = 0
 padding            = 20
 widget_spacing     = 15
@@ -353,7 +353,7 @@ capsule            = false
 
 start  = ["launcher", "wallpaper", "workspaces"]
 center = ["clock"]
-end    = ["tray", "notifications", "clipboard", "network", "volume", "brightness", "battery", "control-center", "session"]
+end    = ["tray", "notifications", "clipboard", "network", "brightness", "battery", "control-center", "session"]
 # end    = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
 
 # Commands for the bar margin outside widget sections (dead zone):
@@ -485,7 +485,7 @@ enabled = false
 # bluetooth_enabled  = []
 # bluetooth_disabled = []
 # battery_state_changed   = "notify-send 'Power' \"Battery: $NOCTALIA_BATTERY_STATE\""
-# battery_under_threshold = "notify-send 'Power' \"Battery at ${NOCTALIA_BATTERY_PERCENT}%\""
+battery_under_threshold = "notify-send 'Power' \"Battery at ${NOCTALIA_BATTERY_PERCENT}%\""
 # power_profile_changed   = "notify-send 'Power' \"Profile: $NOCTALIA_POWER_PROFILE\""
 # [widget.launcher]
 # custom_image = "/path/to/image.png"
@@ -495,8 +495,8 @@ enabled = false
 # custom_image = "/path/to/image.png"
 # custom_image_colorize = false
 
-# [widget.notifications]
-# hide_when_no_unread = true
+[widget.notifications]
+hide_when_no_unread = true
 
 # [widget.network_rx]
 # network_speed_unit = "mb"          # auto | kb | mb
