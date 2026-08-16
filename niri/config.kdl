@@ -11,6 +11,9 @@ environment {
     GTK_IM_MODULE "fcitx"
     QT_IM_MODULE "fcitx"
     XMODIFIERS "@im=fcitx"
+    // Java AWT assumes a reparenting WM; under xwayland-satellite (non-reparenting)
+    // secondary frames like CubeMX's MCU Selector render blank/white without this.
+    _JAVA_AWT_WM_NONREPARENTING "1"
 }
 
 // XWayland via xwayland-satellite, so X11-only apps (STM32CubeMX etc.) can run.
@@ -19,6 +22,44 @@ environment {
 // so point it at the full path here. Reloading config activates it.
 xwayland-satellite {
     path "/home/joreh/.local/bin/xwayland-satellite"
+}
+
+/* Apps: blur them all without xray so it looks more realistic. */
+window-rule {
+  background-effect {
+    blur true
+    xray false
+  }
+}
+
+/*
+  Noctalia
+  Disable xray on all our surfaces so it looks more realistic.
+  Noctalia publishes blur regions automatically when ext-background-effects is available.
+*/
+layer-rule {
+  match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+  background-effect {
+    xray false
+    // blur false
+  }
+}
+
+/* Enable blur on noctalia's window switcher and disable xray. */
+layer-rule {
+    match namespace="noctalia-window-switcher"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+/* You can also fine-tune the blur effect globally. */
+blur {
+  passes 2        // more passes = stronger blur (default: 3)
+  offset 3.0      // sample distance per pass (default: 3.0)
+  noise 0.03      // grain overlay (default: 0.02)
+  saturation 1.0  // color saturation boost (default: 1.5)
 }
 
 // Input device configuration.
@@ -87,47 +128,13 @@ input {
     // focus-follows-mouse max-scroll-amount="0%"
 }
 
-// You can configure outputs by their name, which you can find
-// by running `niri msg outputs` while inside a niri instance.
-// The built-in laptop monitor is usually called "eDP-1".
-// Find more information on the wiki:
-// https://niri-wm.github.io/niri/Configuration:-Outputs
-// Remember to uncomment the node by removing "/-"!
-/-output "eDP-1" {
-    // Uncomment this line to disable this output.
-    // off
-
-    // Resolution and, optionally, refresh rate of the output.
-    // The format is "<width>x<height>" or "<width>x<height>@<refresh rate>".
-    // If the refresh rate is omitted, niri will pick the highest refresh rate
-    // for the resolution.
-    // If the mode is omitted altogether or is invalid, niri will pick one automatically.
-    // Run `niri msg outputs` while inside a niri instance to list all outputs and their modes.
-    mode "1920x1080@120.030"
-
-    // You can use integer or fractional scale, for example use 1.5 for 150% scale.
-    scale 1.75
-
-    // Transform allows to rotate the output counter-clockwise, valid values are:
-    // normal, 90, 180, 270, flipped, flipped-90, flipped-180 and flipped-270.
-    transform "normal"
-
-    // Position of the output in the global coordinate space.
-    // This affects directional monitor actions like "focus-monitor-left", and cursor movement.
-    // The cursor can only move between directly adjacent outputs.
-    // Output scale and rotation has to be taken into account for positioning:
-    // outputs are sized in logical, or scaled, pixels.
-    // For example, a 3840×2160 output with scale 2.0 will have a logical size of 1920×1080,
-    // so to put another output directly adjacent to it on the right, set its x to 1920.
-    // If the position is unset or results in an overlap, the output is instead placed
-    // automatically.
-    position x=1280 y=0
-}
-
 // --- Outputs: 3 monitors (eDP-1 builtin HiDPI, DP-1/DP-2 external 1440p) ---
 output "eDP-1" {
     // 2880x1800 builtin panel, scaled to 1.75 for comfortable text size.
+    // mode "2880x1800@60"
+    // position x=1280 y=0
     scale 1.75
+    // position x=1645 y=200
 }
 output "DP-1" {
     // 2560x1440 external via full-feature USB-C.
@@ -360,18 +367,21 @@ window-rule {
 }
 
 window-rule {
-    match app-id="Wiggler"        // 或 app-id=r#"firefox$"#
+    match app-id="SmartGit"
+
     open-maximized true
 }
 
-// Work around WezTerm's initial configure bug
-// by setting an empty default-column-width.
+// Give code-editing / browser apps a wider default column (75% of the output).
 window-rule {
-    // This regular expression is intentionally made as specific as possible,
-    // since this is the default config, and we want no false positives.
-    // You can get away with just app-id="wezterm" if you want.
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
-    default-column-width {}
+    match app-id=r#"chrome$"#
+
+    match app-id="code"
+    match app-id="neovide"
+    match app-id="Wiggler"
+
+    default-column-width { proportion 0.75; }
 }
 
 // Open the Firefox picture-in-picture player as floating by default.
@@ -380,10 +390,12 @@ window-rule {
     // - host Firefox (app-id is "firefox")
     // - Flatpak Firefox (app-id is "org.mozilla.firefox")
     match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    match app-id="Calculator"
+
     open-floating true
 }
 
-// Example: block out two password managers from screen capture.
+// Example: block out password managers from screen capture.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {
     match app-id=r#"^org\.keepassxc\.KeePassXC$"#
@@ -393,13 +405,6 @@ window-rule {
 
     // Use this instead if you want them visible on third-party screenshot tools.
     // block-out-from "screencast"
-}
-
-// Example: enable rounded corners for all windows.
-// (This example rule is commented out with a "/-" in front.)
-/-window-rule {
-    geometry-corner-radius 12
-    clip-to-geometry true
 }
 
 binds {
@@ -428,7 +433,7 @@ binds {
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
     // For example, this is a standard bind to toggle the screen reader (orca).
-    Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
+    // Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
     // Example volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.
@@ -456,27 +461,44 @@ binds {
     // Open/close the Overview: a zoomed-out view of workspaces and windows.
     // You can also move the mouse into the top-left hot corner,
     // or do a four-finger swipe up on a touchpad.
-    Mod+O repeat=false { toggle-overview; }
+    Mod+U repeat=false { toggle-overview; }
+    // Vim-style workspace switching: P = previous (up), N = next (down),
+    // like Ctrl+p / Ctrl+n in vim insert-mode completion.
+    Mod+P { focus-workspace-up; }
+    Mod+N { focus-workspace-down; }
 
     Mod+Q repeat=false { close-window; }
+    Mod+E { set-column-width "50%"; }
 
-    Mod+Left  { focus-column-left; }
-    Mod+Down  { focus-window-down; }
-    Mod+Up    { focus-window-up; }
-    Mod+Right { focus-column-right; }
     Mod+H     { focus-column-left; }
     Mod+J     { focus-window-down; }
     Mod+K     { focus-window-up; }
     Mod+L     { focus-column-right; }
 
-    Mod+Ctrl+Left  { move-column-left; }
-    Mod+Ctrl+Down  { move-window-down; }
-    Mod+Ctrl+Up    { move-window-up; }
-    Mod+Ctrl+Right { move-column-right; }
+    // Directional scheme: H/J/K/L = focus, +Shift = focus monitor, +Ctrl = move.
+    Mod+Shift+H     { focus-monitor-left; }
+    Mod+Shift+J     { focus-monitor-down; }
+    Mod+Shift+K     { focus-monitor-up; }
+    Mod+Shift+L     { focus-monitor-right; }
+
     Mod+Ctrl+H     { move-column-left; }
+    Mod+Ctrl+L     { move-column-right; }
     Mod+Ctrl+J     { move-window-down; }
     Mod+Ctrl+K     { move-window-up; }
-    Mod+Ctrl+L     { move-column-right; }
+
+    // Monitor moves stay on the Comma/Period family (max two modifiers).
+    Mod+Shift+Comma  { move-column-to-monitor-left; }
+    Mod+Shift+Period { move-column-to-monitor-right; }
+    Mod+Ctrl+Comma   { move-column-to-monitor-up; }
+    Mod+Ctrl+Period  { move-column-to-monitor-down; }
+
+    // Freed keys restored to niri defaults: pull the right window into the
+    // bottom of this column / push the bottom window out into its own column.
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+
+    // Move-column-to-workspace lives on Mod+Ctrl+N/P below;
+    // workspace reordering on Mod+Shift+N/P below that.
 
     // Alternative commands that move across workspaces when reaching
     // the first or last window in a column.
@@ -490,24 +512,6 @@ binds {
     Mod+Ctrl+Home { move-column-to-first; }
     Mod+Ctrl+End  { move-column-to-last; }
 
-    Mod+Shift+Left  { focus-monitor-left; }
-    Mod+Shift+Down  { focus-monitor-down; }
-    Mod+Shift+Up    { focus-monitor-up; }
-    Mod+Shift+Right { focus-monitor-right; }
-    Mod+Shift+H     { focus-monitor-left; }
-    Mod+Shift+J     { focus-monitor-down; }
-    Mod+Shift+K     { focus-monitor-up; }
-    Mod+Shift+L     { focus-monitor-right; }
-
-    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
-    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
-    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
-    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
-    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
-    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
-    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
-    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
-
     // Alternatively, there are commands to move just a single window:
     // Mod+Shift+Ctrl+Left  { move-window-to-monitor-left; }
     // ...
@@ -518,21 +522,18 @@ binds {
 
     Mod+Page_Down      { focus-workspace-down; }
     Mod+Page_Up        { focus-workspace-up; }
-    Mod+U              { focus-workspace-down; }
-    Mod+I              { focus-workspace-up; }
     Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    Mod+Ctrl+U         { move-column-to-workspace-down; }
-    Mod+Ctrl+I         { move-column-to-workspace-up; }
+    Mod+Ctrl+N         { move-column-to-workspace-down; }
+    Mod+Ctrl+P         { move-column-to-workspace-up; }
 
     // Alternatively, there are commands to move just a single window:
     // Mod+Ctrl+Page_Down { move-window-to-workspace-down; }
     // ...
 
-    Mod+Shift+Page_Down { move-workspace-down; }
-    Mod+Shift+Page_Up   { move-workspace-up; }
-    Mod+Shift+U         { move-workspace-down; }
-    Mod+Shift+I         { move-workspace-up; }
+    // Reorder the workspace itself in the stack (Shift = structural move).
+    Mod+Shift+N { move-workspace-down; }
+    Mod+Shift+P { move-workspace-up; }
 
     // You can bind mouse wheel scroll ticks using the following syntax.
     // These binds will change direction based on the natural-scroll setting.
@@ -597,18 +598,9 @@ binds {
     // Mod+Ctrl+1 { move-window-to-workspace 1; }
 
     // Switches focus between the current and the previous workspace.
-    // Mod+Tab { focus-workspace-previous; }
+    Mod+Tab { focus-workspace-previous; }
 
-    // The following binds move the focused window in and out of a column.
-    // If the window is alone, they will consume it into the nearby column to the side.
-    // If the window is already in a column, they will expel it out.
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
-
-    // Consume one window from the right to the bottom of the focused column.
-    Mod+Comma  { consume-window-into-column; }
-    // Expel the bottom window from the focused column to the right.
-    Mod+Period { expel-window-from-column; }
+    // Consume/expel are bound above on Mod+Comma / Mod+Period.
 
     // Cycle through widths set in preset-column-widths.
     Mod+R { switch-preset-column-width; }
@@ -619,7 +611,7 @@ binds {
     Mod+Ctrl+R { reset-window-height; }
 
     Mod+F { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
+    Mod+Shift+M { fullscreen-window; }
 
     // While maximize-column leaves gaps and borders around the window,
     // maximize-window-to-edges doesn't: the window expands to the edges of the screen.
@@ -629,7 +621,7 @@ binds {
 
     // Expand the focused column to space not taken up by other fully visible columns.
     // Makes the column "fill the rest of the space".
-    Mod+Ctrl+F { expand-column-to-available-width; }
+    // Mod+Ctrl+F { expand-column-to-available-width; }
 
     Mod+C { center-column; }
 
@@ -671,11 +663,10 @@ binds {
     // Clipboard history via Noctalia clipboard panel.
     Super+Alt+V { spawn "noctalia" "msg" "panel-open" "clipboard"; }
     // Power menu via Noctalia session panel.
-    Mod+P { spawn "noctalia" "msg" "panel-open" "session"; }
+    Ctrl+Alt+Slash { spawn "noctalia" "msg" "panel-open" "session"; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
+    Mod+S { screenshot; }
+    // Mod+Shift+S { screenshot-screen; }
 
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here
@@ -688,12 +679,13 @@ binds {
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     // The quit action will show a confirmation dialog to avoid accidental exits.
-    Mod+Shift+E { quit; }
+    // Mod+Shift+E { quit; }
     Ctrl+Alt+Delete { quit; }
 
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.
-    Mod+Shift+P { power-off-monitors; }
+    // (Disabled: Noctalia's idle handling covers this.)
+    // Mod+Ctrl+Shift+P { power-off-monitors; }
 }
 
 // Window switcher (recent-windows). Adding a binds{} block removes ALL default
