@@ -80,3 +80,24 @@
 
 ---
 
+## 四、后续更新上游版本
+
+源码仓库(`~/workspaces/window_mananger_ui/noctalia`)的兼容补丁已提交到本地分支 **`ubuntu-24.04`**
+(基于上游 `713e6ca`,包含 wireplumber-0.4 / libwayland-1.22 / vendored stb 全部改动 + `update.sh`)。
+
+更新只需一条命令:
+
+```bash
+cd ~/workspaces/window_mananger_ui/noctalia && ./update.sh
+```
+
+它做的事情: `git fetch` → rebase 补丁到 `origin/main`(冲突时逐个解决) → 全新 meson 配置
+(g++-14 + `~/noctalia-deps` 的 sdbus-c++ v2 + RPATH)→ 编译 → 安装到 `~/.local/bin/noctalia`。
+完成后重启 noctalia(或注销重登)生效。
+
+注意:
+- Ubuntu 24.04 不会升级 wireplumber-0.5 / libwayland-1.23,这些补丁**长期需要**,每次 rebase 都要带着。
+- rebase 冲突高发区: `src/pipewire/wireplumber_mixer.cpp`(0.5→0.4 API)、`src/wayland/virtual_keyboard_service.*`(避开 `wl_proxy_get_display`)。
+- 旧的 `build-release/` 记录的是搬家前的路径(`~/src/noctalia`),已被脚本删除重建,无需保留。
+
+---
