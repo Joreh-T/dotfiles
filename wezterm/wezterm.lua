@@ -174,8 +174,9 @@ config.font = wezterm.font_with_fallback({
     { family = "Noto Color Emoji", weight = "Regular" },
 })
 config.font_size = 14
-if custom.hostname.current == "fresh" then
-    -- config.line_height = 0.9
+
+if F.is_noctalia() then
+    config.line_height = 0.99
 end
 
 ----------------------------- Commands Palette ---------------------------

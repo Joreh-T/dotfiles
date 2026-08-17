@@ -185,4 +185,13 @@ function F.shorten_path(path, max_width)
     end
 end
 
+function F.is_noctalia()
+    if not F.is_linux_os() then
+        return false
+    end
+    local runtime_dir = os.getenv("XDG_RUNTIME_DIR") or ("/run/user/" .. (os.getenv("UID") or "1000"))
+    local socks = wezterm.glob(runtime_dir .. "/noctalia-*.sock")
+    return #socks > 0
+end
+
 return F
