@@ -1274,7 +1274,7 @@ return {
                         if success then
                             local current_file_path = question.file:absolute()
                             if not current_file_path or current_file_path == "" then
-                                print("Current file path not found, skipping file movement.")
+                                vim.notify("Current file path not found, skipping file movement.", vim.log.levels.WARN)
                                 return
                             end
                             local solved_dir = vim.fn.stdpath("data") .. "/leetcode/solved"
@@ -1284,22 +1284,22 @@ return {
                             local file_name = vim.fn.fnamemodify(current_file_path, ":t")
                             local new_file_path = solved_dir .. "/" .. file_name
 
-                            -- Prompt user to confirm moving the file
-                            -- vim.fn.confirm returns 1 for the first option, 2 for the second
+                            -- Prompt user to confirm moving the file (single key: y/n/Enter)
                             vim.defer_fn(function()
-                                local choice =
-                                    vim.fn.confirm("Submission successful! Move this file to the solved directory?", "&Yes\n&No", 1)
-
-                                if choice == 1 then -- User chose "Yes"
-                                    -- vim.fn.rename returns 0 on success, -1 on failure
-                                    local ok, err = pcall(vim.fn.rename, current_file_path, new_file_path)
-                                    if ok == 0 then
-                                        print("File successfully moved to: " .. new_file_path)
+                                local choice = vim.fn.confirm(
+                                    "Submission successful! Would you like to move this file to the solved directory?",
+                                    "&Yes\n&No",
+                                    1
+                                )
+                                if choice == 1 then -- User chose "Yes" or pressed Enter / 'y'
+                                    local ok, ret = pcall(vim.fn.rename, current_file_path, new_file_path)
+                                    if ok and ret == 0 then
+                                        vim.notify("File successfully moved to: " .. new_file_path, vim.log.levels.INFO)
                                     else
-                                        print("Failed to move file: " .. err)
+                                        vim.notify("Failed to move file: " .. tostring(ret), vim.log.levels.ERROR)
                                     end
                                 end
-                            end, 1000)
+                            end, 100)
                         end
                     end,
                 },
