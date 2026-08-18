@@ -15,7 +15,10 @@ map("n", "<A-k>", "<C-u>", { noremap = true, silent = true, desc = "Scroll Down 
 map("n", "<C-i>", "<C-i>", { noremap = true, silent = true })
 map("n", "<C-o>", "<C-o>", { noremap = true, silent = true })
 map("n", "<S-u>", "<C-r>", { noremap = true, silent = true })
-map("n", "<leader>r", "<cmd>LspRestart<CR>", { noremap = true, silent = false, desc = "Restart LSP" })
+-- V0.11.x
+-- map("n", "<leader>r", "<cmd>LspRestart<CR>", { noremap = true, silent = false, desc = "Restart LSP" })
+-- V0.12.x
+map("n", "<leader>r", "<cmd>lsp restart<CR>", { noremap = true, silent = false, desc = "Restart LSP" })
 map("n", "<CR>", "o<esc>", { noremap = true, silent = true })
 
 -- Terminal: toggle (show/hide the same instance), new (always create), close with q in normal mode
