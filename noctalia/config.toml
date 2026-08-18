@@ -305,15 +305,51 @@ address          = ""                # e.g. "Toronto, ON"; geocoded when auto_lo
 # [idle]
 # pre_action_fade_seconds = 2.0
 
-[idle.behavior.lock]
-timeout = 2000
-action = "lock"
+# [idle.behavior.lock]
+# timeout = 2000
+# action = "lock"
+# enabled = true
+#
+# [idle.behavior.screen-off]
+# timeout = 2360
+# action = "screen_off"
+# enabled = true
+#
+# [idle.behavior.suspend]
+# timeout = 2560
+# action = "lock_and_suspend"
+
+# ==========================================
+# 🔋 dc power mode
+# ==========================================
+
+[idle.behavior.lock-and-off-battery]
+timeout = 300
+action = "command"
+command = "bash -c 'on_ac_power || (noctalia msg session lock; sleep 3; niri msg action power-off-monitors)'"
 enabled = true
 
-[idle.behavior.screen-off]
-timeout = 2360
-action = "screen_off"
+[idle.behavior.suspend-battery]
+timeout = 350
+action = "command"
+command = "bash -c 'on_ac_power || systemctl suspend'"
 enabled = true
+
+# ==========================================
+# 🔌 ac power mode
+# ==========================================
+
+[idle.behavior.lock-and-off-ac]
+timeout = 1800
+action = "command"
+command = "bash -c 'on_ac_power && (noctalia msg session lock; sleep 3; niri msg action power-off-monitors)'"
+enabled = true
+
+# [idle.behavior.suspend-ac]
+# timeout = 18000
+# action = "command"
+# command = "bash -c 'on_ac_power && systemctl suspend'"
+# enabled = true
 
 # ── Keybinds ──────────────────────────────────────────────────────────────────
 
