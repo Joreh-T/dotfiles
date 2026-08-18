@@ -175,10 +175,6 @@ config.font = wezterm.font_with_fallback({
 })
 config.font_size = 14
 
-if F.is_noctalia() then
-    config.line_height = 0.99
-end
-
 ----------------------------- Commands Palette ---------------------------
 config.command_palette_font_size = 15
 config.command_palette_font = wezterm.font_with_fallback({
@@ -209,6 +205,10 @@ if F.is_linux_os() then
 end
 
 local top_padding = { config.font_size }
+
+if F.is_noctalia() then
+    top_padding = { config.font_size/2 }
+end
 
 config.window_padding = {
     left = 0,
@@ -252,7 +252,8 @@ config.tab_max_width = 30
 config.use_fancy_tab_bar = false
 
 --------------------------------- Graphics ---------------------------------
-config.animation_fps = 1
+config.animation_fps = 24
+config.max_fps = 60
 -- When using a non-English keyboard to input a return(Enter), the following configuration will cause the terminal to freeze.
 -- if custom.hostname.current == "fresh" then
 -- config.animation_fps = 1
