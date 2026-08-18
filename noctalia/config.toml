@@ -373,8 +373,8 @@ background_opacity = 0.7
 radius             = 20
 margin_ends        = 280
 margin_edge        = 1
-padding            = 20
-widget_spacing     = 10
+padding            = 15
+widget_spacing     = 9
 scale              = 1.2
 shadow             = true
 auto_hide          = false
@@ -393,17 +393,18 @@ end    = ["tray", "notifications", "clipboard", "network", "brightness", "batter
 # end    = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness", "battery", "control-center", "session"]
 
 # Commands for the bar margin outside widget sections (dead zone):
-# [bar.main.dead_zone.actions]
-# left = "panel-toggle launcher"
-# right = "panel-toggle control-center"
+[bar.main.dead_zone.actions]
+left = "panel-toggle launcher"
+right = "panel-toggle control-center"
 # middle = "none"
 # scroll_up = "none"
 # scroll_down = "none"
 
 # Per-monitor override example — only the fields you list are overridden:
-# [bar.main.monitor.dp1]
-# match     = "DP-1"
-# thickness = 44
+[bar.main.monitor.edp-1]
+match       = "eDP-1"
+thickness   = 40
+margin_ends = 160
 # [bar.main.monitor.dp1.dead_zone.actions]
 # left = "panel-toggle launcher"
 
