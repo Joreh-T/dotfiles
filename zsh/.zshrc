@@ -79,6 +79,20 @@ export LANG=en_US.UTF-8
 #   export EDITOR='nvim'
 # fi
 
+if command -v nvim >/dev/null 2>&1; then
+    export EDITOR='nvim'
+    export VISUAL='nvim'
+    export SUDO_EDITOR='nvim'
+elif command -v vim >/dev/null 2>&1; then
+    export EDITOR='vim'
+    export VISUAL='vim'
+    export SUDO_EDITOR='vim'
+else
+    export EDITOR='vi'
+    export VISUAL='vi'
+    export SUDO_EDITOR='vi'
+fi
+
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
 
