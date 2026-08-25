@@ -667,7 +667,8 @@ binds {
 
     Mod+S { screenshot; }
     // Mod+Shift+S { screenshot-screen; }
-
+    // Screen Toolkit tools panel (open/close, matches panel-mode setting).
+    Mod+X hotkey-overlay-title="Screen Toolkit" { spawn "noctalia" "msg" "plugin" "alexander/screen-toolkit:service" "all" "toggle"; }
     // Applications such as remote-desktop clients and software KVM switches may
     // request that niri stops processing the keyboard shortcuts defined here
     // so they may, for example, forward the key presses as-is to a remote machine.
