@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# noctalia-greeter-switch — 在 GDM3 和 noctalia-greeter(greetd) 之间切换登录管理器。
+#
+# 用法:
+#   noctalia-greeter-switch switch    切到 greetd(会终止当前图形会话,先保存工作!)
+#   noctalia-greeter-switch rollback  切回 GDM3(出问题时用:Ctrl+Alt+F2 → tty2 登录 → 执行)
+#   noctalia-greeter-switch status    只查看当前状态,不改任何东西
+#
+# 原理: display-manager.service 符号链接就是"开机启动哪个 DM";
+#       切换 = 停旧 DM → 重指链接 → 启新 DM。回滚完全对称。
+# 注意: getty@tty1.service 已被 mask(greetd 与 getty 抢 VT1 会致登录死循环,
+#       详见 ~/dotfiles/niri/docs/greetd-greeter.md)——无论切到哪边都保持 mask。
+set -euo pipefail
+
+DM_ALIAS=/etc/systemd/system/display-manager.service
+# gdm3.service 是指向 gdm.service 的转接链;优先用真身,老名字作后备
+GDM_UNIT=/lib/systemd/system/gdm.service
+[[ -e "$GDM_UNIT" ]] || GDM_UNIT=/lib/systemd/system/gdm3.service
+GREETD_UNIT=/lib/systemd/system/greetd.service
+
+if [[ ${1:-} == "switch" || ${1:-} == "rollback" ]] && [[ ${EUID} -ne 0 ]]; then
+  exec sudo bash "$0" "$@"
+fi
+
+status() {
+  local target=""
+  target="$(readlink -f "$DM_ALIAS" 2>/dev/null || echo "none")"
+  echo "display-manager 别名 → ${target}"
+  echo "gdm3:   active=$(systemctl is-active gdm3 2>/dev/null || true)"
+  echo "greetd: active=$(systemctl is-active greetd 2>/dev/null || true)"
+  echo "下次开机启动: ${target}"
+}
+
+switch() {
+  echo "!! 3 秒后终止当前图形会话 (Ctrl+C 取消) !!"
+  sleep 3
+  echo "==> 停止 gdm3 (你的 niri/noctalia 会话将退出)..."
+  systemctl stop gdm3 2>/dev/null || true
+  echo "==> display-manager 别名改指 greetd..."
+  ln -sfn "$GREETD_UNIT" "$DM_ALIAS"
+  systemctl daemon-reload
+  echo "==> 启动 greetd..."
+  systemctl start greetd
+  echo
+  echo "完成。greeter 界面应出现在 VT1。"
+  echo "若黑屏/卡死: Ctrl+Alt+F2 → 登录 → 执行: noctalia-greeter-switch rollback"
+}
+
+rollback() {
+  echo "==> 停止 greetd..."
+  systemctl stop greetd 2>/dev/null || true
+  echo "==> display-manager 别名改指 gdm3..."
+  ln -sfn "$GDM_UNIT" "$DM_ALIAS"
+  systemctl daemon-reload
+  echo "==> 启动 gdm3..."
+  systemctl start gdm3
+  echo
+  echo "完成。GDM 登录界面应出现在 VT1,系统已恢复原状。"
+}
+
+case "${1:-}" in
+  switch)   switch ;;
+  rollback) rollback ;;
+  status)   status ;;
+  *)
+    echo "用法: $0 {switch|rollback|status}" >&2
+    echo "  switch   切到 noctalia-greeter (终止当前会话!)" >&2
+    echo "  rollback 切回 GDM3" >&2
+    echo "  status   查看当前状态" >&2
+    exit 1
+    ;;
+esac

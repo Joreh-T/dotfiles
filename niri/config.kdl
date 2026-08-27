@@ -7,8 +7,11 @@
 // like noctalia (installed there; NOT in the login-manager PATH).
 environment {
     PATH "/home/joreh/.local/bin:/home/joreh/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
-    // Input method framework = fcitx5 (overrides ibus leftover from GNOME session).
-    GTK_IM_MODULE "fcitx"
+    // Input method framework = fcitx5.
+    // FIX (2026-08-27): GTK_IM_MODULE removed per fcitx5 Wayland guidance — niri 26.04
+    // has text-input-v3 + input-method-v2, so GTK talks to fcitx5 via Wayland IM frontend
+    // (removing it also silences fcitx5's "Wayland frontend working" startup warning).
+    // Kept: QT_IM_MODULE for Qt apps, XMODIFIERS for Xwayland apps (XIM).
     QT_IM_MODULE "fcitx"
     XMODIFIERS "@im=fcitx"
     // Java AWT assumes a reparenting WM; under xwayland-satellite (non-reparenting)
@@ -311,6 +314,10 @@ layout {
 // Noctalia is the sole shell: bar, launcher, notifications, lock, idle, clipboard, polkit.
 // (It replaces waybar, fuzzel, dunst, swayidle/swaylock, wl-paste+cliphist, polkit agent.)
 spawn-at-startup "/home/joreh/.local/bin/noctalia"
+// Input method: fcitx5 spawned directly (im-launch/im-config autostart is overridden
+// off in ~/.config/autostart — it exports GTK_IM_MODULE, wrong on Wayland; see notes
+// in config.kdl environment block and autostart overrides doc).
+spawn-at-startup "fcitx5"
 // wallpaper is handled by Noctalia itself.
 // Auto-display: any external (DP-1/DP-2) connected → built-in eDP-1 off; all disconnected → on.
 spawn-at-startup "/home/joreh/.local/bin/niri-autodisplay.sh"

@@ -15,6 +15,7 @@ declare -A LINKS=(
     ["$DOTFILES_DIR/niri"]="$HOME/.config/niri"
     ["$DOTFILES_DIR/noctalia"]="$HOME/.config/noctalia"
     ["$DOTFILES_DIR/bin/niri-autodisplay.sh"]="$HOME/.local/bin/niri-autodisplay.sh"
+    ["$DOTFILES_DIR/bin/noctalia-greeter-switch"]="$HOME/.local/bin/noctalia-greeter-switch"
     ["$DOTFILES_DIR/fcitx5/config"]="$HOME/.config/fcitx5/config"
     ["$DOTFILES_DIR/fcitx5/profile"]="$HOME/.config/fcitx5/profile"
     ["$DOTFILES_DIR/fcitx5-rime/default.custom.yaml"]="$HOME/.local/share/fcitx5/rime/default.custom.yaml"

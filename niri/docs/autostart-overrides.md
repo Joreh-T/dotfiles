@@ -9,6 +9,17 @@
   intent for Noctalia to be the sole bar. Re-enable with
   `systemctl --user unmask waybar.service`.
 
+- `~/.config/autostart/im-launch.desktop` → `Hidden=true` — 禁用 im-config 的
+  im-launch 自启。它导出的 `GTK_IM_MODULE=fcitx` 在 Wayland 下与 fcitx5 冲突
+  (fcitx5 官方建议 GTK 走 Wayland IM 前端)。fcitx5 改由 niri `spawn-at-startup`
+  直接拉起,`~/.xinputrc` 设为 `run_im none` 掐断 profile 链。详见 greetd-greeter.md。
+
+## 其他系统级 autostart/DM 相关覆盖
+
+- `getty@tty1.service` → **masked**(greetd 与 getty 抢 VT1 会导致登录死循环,
+  详见 `greetd-greeter.md` 坑 1)
+- greeter/greetd 部署全记录: `greetd-greeter.md`
+
 - `~/.local/bin/niri-autodisplay.sh` (autostarted by niri) — udev hotplug listener:
   if any external (DP-1/DP-2) connected → `niri msg output eDP-1 off`; all disconnected → `on`.
   Added so the laptop panel auto-turns-off when docked to an external monitor.

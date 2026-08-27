@@ -1,0 +1,62 @@
+# greetd + noctalia-greeter 部署记录(2026-08-27)
+
+从 GDM3 迁移到 greetd + noctalia-greeter 的完整记录。系统状态 + 排坑结论,重建/排障时先读这里。
+
+## 系统布局
+
+| 组件 | 位置 | 说明 |
+|---|---|---|
+| greeter 二进制/库/assets | `/opt/greeter-deps/` | 755,greetd 用户可读;含 wlroots 0.20 工具链(见下) |
+| greetd 配置 | `/etc/greetd/config.toml` | command 指向 `/opt/greeter-deps/bin/noctalia-greeter-session`,user=`_greetd`(Ubuntu 打包惯例,uid 126) |
+| greeter 状态 | `/var/lib/noctalia-greeter/` | greeter.toml + sync.toml;`noctalia msg greeter-sync` 同步壁纸/配色 |
+| 切换脚本 | `~/.local/bin/noctalia-greeter-switch` | `switch\|rollback\|status`;源在 dotfiles/bin,setup.sh 链接 |
+| 源码 | `~/workspaces/window_mananger_ui/noctalia-greeter` | 本地有 2 个 patch(meson.build stb include + session wrapper LD_LIBRARY_PATH),未建分支提交 |
+| display-manager 别名 | `/etc/systemd/system/display-manager.service` | → greetd.service;回滚=指回 gdm.service |
+| **getty@tty1** | `systemctl mask getty@tty1.service` | **已 mask,勿恢复!** 见下 |
+
+## 关键坑(按严重程度)
+
+1. **getty@tty1 与 greetd 抢 VT → 登录死循环**(已修复,mask)。
+   症状:输密码进桌面 10-30 秒后被弹回 greeter,无限循环。
+   机制:greetd 会话占用 tty1 → getty@tty1 退出 → systemd 重启 getty → getty 抢回
+   tty1,给会话发 SIGHUP → logind 判会话结束 → greetd 拉新 greeter → 循环。
+   Ubuntu 的 GDM 包自己处理了这个互斥,greetd 没有。
+   niri 收到 SIGHUP 的证据路径:用带日志的 wrapper(Exec 指向写 /tmp 日志的脚本)抓到。
+
+2. **greetd 下必须用 `niri-session`,不是 `niri --session`**。
+   `/usr/share/wayland-sessions/niri.desktop` 的 `Exec=niri-session`(当前状态)。
+   - `niri-session` 走 `niri.service` 用户单元 → graphical-session.target +
+     xdg-desktop-autostart.target 全链(portal、im-launch 等都靠它)。
+   - `niri --session` 只做环境导入,target 链不起来(它们 RefuseManualStart,
+     只能由单元依赖拉起),fcitx5/portal 全废。
+   - 排查此问题时曾误判 niri-session 是循环根因,实际凶手是 getty(见 1)。
+
+3. **IM 变量(im-config)在 Wayland 下与 fcitx5 冲突**(已修复):
+   - `~/.xinputrc` → `run_im none`:掐断 im-config 导出 GTK_IM_MODULE 的链
+     (niri-session 的 login shell 会 source /etc/profile.d/im-config_wayland.sh)。
+   - `~/.config/autostart/im-launch.desktop` → `Hidden=true`(禁 im-launch autostart)。
+   - niri `config.kdl`:`spawn-at-startup "fcitx5"` 直接拉起;environment 块只留
+     QT_IM_MODULE + XMODIFIERS(GTK 走 niri 原生 Wayland IM 前端,fcitx5 官方推荐)。
+   - 改环境变量类的东西后 `systemctl --user unset-environment GTK_IM_MODULE ...`
+     清用户管理器残留(它不会自清)。
+
+4. **构建工具链**(Ubuntu 24.04 noble,参考 `update.sh` 不存在,手动链):
+   wlroots 0.20 wrap 全家桶装进 /opt/greeter-deps(wayland 1.26.9/libdrm 2.4.134/
+   libdisplay-info/libliftoff/pixman/xkbcommon);noble 的 meson 1.3.2 不够 →
+   `~/.local/opt/meson-venv`(venv meson 1.12,软链 ~/.local/bin/meson);
+   stb 头手装 /opt/greeter-deps/include/stb/ + meson.build patch;wlroots 间接依赖
+   靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
+   详见记忆 noctalia-daemon-debugging。
+
+## 遗留小问题
+
+- 开机第一个 greeter 实例偶发闪崩(greetd 日志 "greeter exited without creating a
+  session"),greetd 自动重启后正常。不影响使用,待上游修复或下次排查。
+- greeter 源码的 2 个本地 patch 建议仿 noctalia fork 模式建 `ubuntu-24.04` 分支提交。
+
+## 回滚到 GDM
+
+```bash
+noctalia-greeter-switch rollback   # 或: sudo ln -sfn /lib/systemd/system/gdm.service /etc/systemd/system/display-manager.service && sudo reboot
+```
+GDM3 未卸载,getty@tty1 保持 mask 也不影响 GDM(GDM 用自己的互斥机制)。

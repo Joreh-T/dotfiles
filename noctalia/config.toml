@@ -217,6 +217,11 @@ blurred_desktop         = false       # use a desktop snapshot as the lock scree
 blur_intensity          = 0.5         # lock screen background blur (0.0 = none, 1.0 = maximum)
 tint_intensity          = 0.3         # surface-color tint over the lock screen background
 # wallpaper             = ""          # optional image path for the lock screen; empty uses the desktop wallpaper
+# Verified in source (fork lock_screen.cpp isInteractiveOutput): if NONE of the listed
+# connectors is currently present, the restriction is dropped and the lock screen shows on
+# all outputs — so undocked (eDP-1 only) still gets a visible lock screen. "Others stay black"
+# only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
+# lock screen on DP-1 only).
 monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
 
 # ── System Monitor ────────────────────────────────────────────────────────────
@@ -302,8 +307,12 @@ address          = ""                # e.g. "Toronto, ON"; geocoded when auto_lo
 # Optional `[idle]` keys:
 #   pre_action_fade_seconds — fade a fullscreen surface-color overlay in over this many seconds, then run `command`.
 #                             Use 0 for immediate commands with no overlay. Input during the fade cancels.
-# [idle]
-# pre_action_fade_seconds = 2.0
+# FIX (2026-08-26): with power-gated lock commands (on_ac_power || / &&) the pre-action fade
+# still runs on the power source where the command no-ops — on AC that meant: 5 min idle →
+# screen faded to black → command no-op → overlay lifted → screen bright again, never locked.
+# Per-behavior pre_action_fade_seconds is NOT supported (unknown setting), so disable globally.
+[idle]
+pre_action_fade_seconds = 0
 
 # Power-aware idle rules: commands only gate on power source; everything else
 # is native. timeout = 0 + locked_timeout > 0 arms a behavior only while the
@@ -521,7 +530,6 @@ enabled = [
 # bluetooth_enabled  = []
 # bluetooth_disabled = []
 # battery_state_changed   = "notify-send 'Power' \"Battery: $NOCTALIA_BATTERY_STATE\""
-battery_under_threshold = "notify-send 'Power' \"Battery at ${NOCTALIA_BATTERY_PERCENT}%\""
 # power_profile_changed   = "notify-send 'Power' \"Profile: $NOCTALIA_POWER_PROFILE\""
 # [widget.launcher]
 # custom_image = "/path/to/image.png"
