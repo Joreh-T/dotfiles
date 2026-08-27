@@ -53,6 +53,13 @@
 - 开机第一个 greeter 实例偶发闪崩(greetd 日志 "greeter exited without creating a
   session"),greetd 自动重启后正常。不影响使用,待上游修复或下次排查。
 - greeter 源码的 2 个本地 patch 建议仿 noctalia fork 模式建 `ubuntu-24.04` 分支提交。
+- greeter 启动时 amdgpu 报 DMCUB error(每greeter启动~8条,journal可查):wlroots 0.20
+  对 renoir 选的缓冲 modifier 不可扫描输出(配套"cannot be scanned out"刷屏),
+  功能正常,纯噪音。kernel cmdline `loglevel=3` 已让其不再打印到 tty(journal 仍留);
+  根治需上游修 wlroots/greeter modifier 协商。
+- niri-session(/usr/local/bin,手动安装)已改显式 import-environment 变量清单
+  (systemd 弃用裸调会打 stderr 警告到 tty);原版备份 .bak 同目录。niri 升级重装
+  时注意保留此 patch。
 
 ## 回滚到 GDM
 
