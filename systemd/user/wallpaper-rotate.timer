@@ -1,0 +1,10 @@
+[Unit]
+Description=Rotate wallpaper every 2 hours (systemd-scheduled; shell stays hands-off at startup)
+
+[Timer]
+OnCalendar=*-*-* 00/2:00:00
+Persistent=true
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

@@ -127,7 +127,7 @@ directory_dark      = ""            # optional night-mode directory
 path = ""                            # optional initial/default wallpaper path
 
 [wallpaper.automation]
-enabled                    = true
+enabled                    = false       # rotation is systemd-scheduled (systemd/user/wallpaper-rotate.timer); keeping this off also stops the forced switch at shell startup
 interval_seconds           = 7200    # seconds between changes
 order                      = "random" # random | alphabetical
 recursive                  = true    # include subdirectories when picking random wallpapers

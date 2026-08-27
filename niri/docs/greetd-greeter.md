@@ -48,6 +48,16 @@
    靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
    详见记忆 noctalia-daemon-debugging。
 
+## 壁纸轮换改为 systemd timer 调度(2026-08-27)
+
+noctalia 内置 automation 在 shell 启动时强制换一张(还排除当前图),导致
+"greeter 显示 X、登录后桌面变 Y"的不和谐。改用 systemd user timer 接管轮换:
+- `dotfiles/systemd/user/wallpaper-rotate.{timer,service}`(setup.sh 软链),
+  每 2h 整点 `noctalia msg wallpaper-next`(alphabetical 顺序),Persistent 补跑,
+  shell 不在时安静失败等下个周期
+- `[wallpaper.automation] enabled = false`(内置彻底关闭)
+- 效果:换图只因时间到,不因 shell 启动;greeter 与桌面在登录边界永远一致
+
 ## greeter 壁纸跟随轮换:零提权轻方案(2026-08-27)
 
 不动 polkit、不用官方 greeter-sync 的拷贝链路。greeter 壁纸路径直接指向

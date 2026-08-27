@@ -1,0 +1,8 @@
+[Unit]
+Description=Switch to the next wallpaper via noctalia IPC
+
+[Service]
+Type=oneshot
+# Silent no-op when the shell is not running (e.g. sitting at the greeter):
+# the wallpaper stays put and the next timer tick retries.
+ExecStart=/bin/sh -c 'noctalia msg wallpaper-next || true'
