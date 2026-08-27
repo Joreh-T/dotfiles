@@ -523,7 +523,7 @@ enabled = [
 [hooks]
 
 # started           = "notify-send 'Noctalia' 'Shell started'"
-# wallpaper_changed = []
+wallpaper_changed = ["/home/joreh/.local/bin/greeter-wallpaper-follow"] # make greeter follow wallpaper rotation (path-pointer, zero privilege)
 # colors_changed    = []
 # theme_mode_changed = "notify-send 'Noctalia' \"Theme mode: $NOCTALIA_THEME_MODE\""
 # session_locked    = []

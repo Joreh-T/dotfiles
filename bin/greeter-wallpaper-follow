@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""noctalia hook: wallpaper_changed -> make the greeter follow.
+
+Updates /var/lib/noctalia-greeter/sync.toml to point the greeter wallpaper
+entries at the new image instead of copying it (the official `greeter-sync`
+duplicates 5MB PNGs via a pkexec helper; this zero-privilege variant only
+rewrites the `path` lines, since _greetd can read ~/Pictures/Wallpapers
+through ACLs). The greeter is stateless: it reads sync.toml at startup, so
+the next logout/reboot naturally shows the new wallpaper.
+
+Surgical line edit: everything except the target `path` lines is preserved
+byte-for-byte (palette table, [[session.actions]], comments, ordering).
+
+Env from noctalia:
+  NOCTALIA_WALLPAPER_PATH       new wallpaper file
+  NOCTALIA_WALLPAPER_CONNECTOR  output name, empty for global changes
+
+Idempotent; logs to ~/.cache/noctalia/greeter-follow.log.
+"""
+import os
+import pathlib
+import re
+import sys
+import time
+
+SYNC = pathlib.Path("/var/lib/noctalia-greeter/sync.toml")
+ALLOWED_ROOT = pathlib.Path.home() / "Pictures" / "Wallpapers"
+LOG = pathlib.Path.home() / ".cache" / "noctalia" / "greeter-follow.log"
+
+PATH_RE = re.compile(r'^(\s*path\s*=\s*").*(")')
+
+
+def log(msg: str) -> None:
+    try:
+        with LOG.open("a") as f:
+            f.write(f"{time.strftime('%F %T')} {msg}\n")
+    except OSError:
+        pass
+
+
+def main() -> int:
+    raw = os.environ.get("NOCTALIA_WALLPAPER_PATH", "")
+    connector = os.environ.get("NOCTALIA_WALLPAPER_CONNECTOR", "")
+    if not raw:
+        return 0
+
+    image = pathlib.Path(raw).resolve()
+    if not image.is_file():
+        log(f"not a file: {image}; skipping")
+        return 0
+    # Only point the greeter at images under our wallpaper dir (ACL'd for
+    # _greetd). Anything else would produce an unreadable greeter background.
+    try:
+        image.relative_to(ALLOWED_ROOT)
+    except ValueError:
+        log(f"outside {ALLOWED_ROOT}: {image}; skipping")
+        return 0
+    target = str(image)
+
+    try:
+        lines = SYNC.read_text().splitlines(keepends=True)
+    except OSError as e:
+        log(f"cannot read {SYNC}: {e}")
+        return 1
+
+    changed = 0
+    section = ""
+    out = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            section = stripped[1:-1]
+            out.append(line)
+            continue
+        m = PATH_RE.match(line)
+        if m:
+            # Global always follows the latest change; connector events also
+            # update their own output entry, empty connector updates all.
+            hits_global = section == "appearance.wallpaper"
+            hits_output = (
+                section.startswith("appearance.wallpapers.")
+                and (not connector or section.rsplit(".", 1)[-1] == connector)
+            )
+            if hits_global or hits_output:
+                new_line = m.group(1) + target + m.group(2) + line[m.end():]
+                if new_line != line:
+                    line = new_line
+                    changed += 1
+        out.append(line)
+
+    if changed == 0:
+        return 0  # already pointing there; nothing to write
+
+    # In-place single write: the file ACL (u:joreh:rw) covers this without
+    # granting directory write (needed for atomic tmp+replace). Window is
+    # sub-ms for ~1.6KB; worst case (torn write) = greeter falls back to
+    # builtin appearance, and the next hook run or greeter-sync rewrites it.
+    try:
+        with SYNC.open("w") as f:
+            f.write("".join(out))
+            f.flush()
+            os.fsync(f.fileno())
+    except OSError as e:
+        log(f"cannot write {SYNC}: {e}")
+        return 1
+
+    log(f"updated {changed} path line(s) -> {target}" + (f" [{connector}]" if connector else ""))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

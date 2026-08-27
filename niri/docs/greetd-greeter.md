@@ -48,6 +48,32 @@
    靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
    详见记忆 noctalia-daemon-debugging。
 
+## greeter 壁纸跟随轮换:零提权轻方案(2026-08-27)
+
+不动 polkit、不用官方 greeter-sync 的拷贝链路。greeter 壁纸路径直接指向
+`~/Pictures/Wallpapers/` 里的原图;noctalia 轮换壁纸时由 hook 改
+`/var/lib/noctalia-greeter/sync.toml` 的 `path` 行(外科手术式,其余字节不动),
+下次 greeter 启动自然读到新图。
+
+前提 ACL(一次性,sudo):
+- `setfacl -m u:_greetd:x /home/joreh /home/joreh/Pictures` (目录穿越)
+- `setfacl -R -m u:_greetd:rX,d:u:_greetd:rX /home/joreh/Pictures/Wallpapers` (读图+新文件默认)
+- `setfacl -m u:joreh:rw /var/lib/noctalia-greeter/sync.toml` (hook 就地写;
+  属主仍 _greetd,目录不加写权限 → 不能原子替换,就地 open("w") 单次写入)
+
+链路: noctalia `[hooks] wallpaper_changed = ~/.local/bin/greeter-wallpaper-follow`
+(dotfiles/bin/ 同名,setup.sh 已链接) → env NOCTALIA_WALLPAPER_PATH/CONNECTOR →
+脚本只接受 `~/Pictures/Wallpapers` 内的文件(路径域校验) → 更新
+`[appearance.wallpaper]` + `[appearance.wallpapers.<connector>]` 的 path →
+幂等(未变不写)。日志 `~/.cache/noctalia/greeter-follow.log`。
+
+注意:
+- 只跟随壁纸;配色/布局仍是上次 greeter-sync 的快照,要刷新跑一次
+  `noctalia msg greeter-sync`(它会把 path 写回拷贝模式,下次轮换 hook 自动
+  接管回直连模式,共存自洽)
+- greeter.toml 的 `wallpaper_blur`(背景模糊)独立于壁纸来源,两者叠加生效
+- 轮换事件按显示器分别触发(eDP-1/DP-1 各一次),全局 path 始终跟随最新
+
 ## 登录背景模糊(2026-08-27,本地功能)
 
 greeter fork 的 `ubuntu-24.04` 分支(commit 51e2cb2)从 noctalia shell 移植了
