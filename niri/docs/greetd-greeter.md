@@ -48,6 +48,19 @@
    靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
    详见记忆 noctalia-daemon-debugging。
 
+## 登录背景模糊(2026-08-27,本地功能)
+
+greeter fork 的 `ubuntu-24.04` 分支(commit 51e2cb2)从 noctalia shell 移植了
+BlurCache/CachedLayer(greeter 原本只有 blur shader 是完整实现,缓存层是 stub):
+壁纸纹理加载后一次性模糊到 <=1024px FBO(2 轮分离高斯),显示模糊纹理。
+- 配置键: `/var/lib/noctalia-greeter/greeter.toml` `[appearance] wallpaper_blur`
+  = 0.0..1.0(编译默认 0.55,0=关闭);与 password_style 一样独立于 scheme 来源,
+  greeter-sync 不会覆盖它
+- 重建: `cd ~/workspaces/window_mananger_ui/noctalia-greeter && ninja -C build-release`
+  然后 `sudo env PATH=$HOME/.local/opt/meson-venv/bin:$PATH meson install -C build-release`
+  (必须 meson install,不能只拷二进制)
+- 生效时机: greeter 是登录时才启动的进程,改完下次注销/重启即可见
+
 ## greeter-sync(壁纸/配色同步到登录界面)的三层前提(2026-08-27 补全)
 
 1. noctalia 只在 `/usr/bin`、`/usr/local/bin` 找 `noctalia-greeter` 和
