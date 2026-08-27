@@ -118,9 +118,11 @@ scheme 变 "Synced"、wallpaper-*.png 出现。
   对 renoir 选的缓冲 modifier 不可扫描输出(配套"cannot be scanned out"刷屏),
   功能正常,纯噪音。kernel cmdline `loglevel=3` 已让其不再打印到 tty(journal 仍留);
   根治需上游修 wlroots/greeter modifier 协商。
-- niri-session(/usr/local/bin,手动安装)已改显式 import-environment 变量清单
-  (systemd 弃用裸调会打 stderr 警告到 tty);原版备份 .bak 同目录。niri 升级重装
-  时注意保留此 patch。
+- niri-session(/usr/local/bin,手动安装)已改"只导入已设置变量"的 import-environment:
+  裸调被 systemd 弃用(stderr 警告到 tty),但固定名单又会让 systemctl 对尚不存在
+  的 WAYLAND_DISPLAY/DISPLAY 打 "$VAR not set, ignoring" 到 tty1 —— 这俩由 niri
+  session 模式启动后自行导入,niri-session 阶段必然为空。现用 for+eval 过滤。
+  原版备份 .bak 同目录。niri 升级重装时注意保留此 patch。
 
 ## 回滚到 GDM
 
