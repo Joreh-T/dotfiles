@@ -114,9 +114,11 @@ scheme 变 "Synced"、wallpaper-*.png 出现。
 - 开机第一个 greeter 实例偶发闪崩(greetd 日志 "greeter exited without creating a
   session"),greetd 自动重启后正常。不影响使用,待上游修复或下次排查。
 - greeter 源码的 2 个本地 patch 建议仿 noctalia fork 模式建 `ubuntu-24.04` 分支提交。
-- greeter 启动时 amdgpu 报 DMCUB error(每greeter启动~8条,journal可查):wlroots 0.20
-  对 renoir 选的缓冲 modifier 不可扫描输出(配套"cannot be scanned out"刷屏),
-  功能正常,纯噪音。kernel cmdline `loglevel=3` 已让其不再打印到 tty(journal 仍留);
+- greeter 启动时 amdgpu 报 DMCUB error(PRIORITY=3,每greeter启动~8条,journal可查):
+  wlroots 0.20 对 renoir 选的缓冲 modifier 不可扫描输出,功能正常,纯噪音。
+  注:cmdline `loglevel=3` 单独不够 —— Ubuntu 的 /etc/sysctl.d/10-console-messages.conf
+  会在开机 ~0.5s 把 kernel.printk 抬回 4 4 1 7。已加
+  /etc/sysctl.d/99-console-loglevel-3.conf (kernel.printk=3 4 1 7) 压制;
   根治需上游修 wlroots/greeter modifier 协商。
 - niri-session(/usr/local/bin,手动安装)已改"只导入已设置变量"的 import-environment:
   裸调被 systemd 弃用(stderr 警告到 tty),但固定名单又会让 systemctl 对尚不存在
