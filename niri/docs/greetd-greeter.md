@@ -48,6 +48,18 @@
    靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
    详见记忆 noctalia-daemon-debugging。
 
+## greeter-sync(壁纸/配色同步到登录界面)的三层前提(2026-08-27 补全)
+
+1. noctalia 只在 `/usr/bin`、`/usr/local/bin` 找 `noctalia-greeter` 和
+   `noctalia-greeter-apply-appearance`(守护进程启动时注册 IPC,找不到则
+   `noctalia msg greeter-sync` 报 unknown command)→ 已软链 /opt 真身到 /usr/local/bin。
+2. polkit action 必须装: `/usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy`
+   (从 /opt/greeter-deps/share/polkit-1/actions/ 复制,exec.path 已指向 /opt 真身)。
+3. 会话内要有 polkit 认证代理,否则 pkexec 退回文本认证而守护进程无 tty →
+   noctalia config `polkit_agent = true`(dotfiles 已改)。
+验证: `noctalia msg greeter-sync` 返回 ok,`/var/lib/noctalia-greeter/sync.toml` 的
+scheme 变 "Synced"、wallpaper-*.png 出现。
+
 ## 遗留小问题
 
 - 开机第一个 greeter 实例偶发闪崩(greetd 日志 "greeter exited without creating a
