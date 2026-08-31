@@ -409,7 +409,7 @@ right = "panel-toggle control-center"
 [bar.main.monitor.edp-1]
 match       = "eDP-1"
 thickness   = 40
-margin_ends = 160
+margin_ends = 100
 # [bar.main.monitor.dp1.dead_zone.actions]
 # left = "panel-toggle launcher"
 
