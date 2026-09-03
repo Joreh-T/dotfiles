@@ -1,103 +1,97 @@
-# Noctalia v5 适配记录
+# Noctalia v5 Adaptation Notes
 
-**日期**: 2026-08-13
-**环境**: Ubuntu 24.04.4 LTS · niri 26.04 · 笔记本 Yoga + 两块外接 2560×1440
-
----
-
-## 一、背景与目标
-
-用户原有一个近乎默认的 niri 配置(Catppuccin 主题,waybar 状态栏)。尝试过 **DankMaterialShell (DMS)** 和 **Noctalia v5** 两个完整桌面 shell,最终选定 **Noctalia v5**:
-
-- **DMS 弃用原因**: 需要 Ubuntu 25 / Qt ≥ 6.6,而系统是 24.04(Qt 6.4)——硬性不兼容。
-- **Noctalia 胜出**: 原生 C++/Wayland,无 Qt/Gtk 依赖,目标是 niri 一等公民,一体化提供 bar/启动器/通知/锁屏/剪贴板/壁纸/托盘。
-
-最终用 Noctalia 作为**唯一桌面 shell**,替换了 waybar/fuzzel/dunst/swayidle/swaylock/cliphist/polkit。
+**Date**: 2026-08-13
+**Environment**: Ubuntu 24.04.4 LTS · niri 26.04 · laptop built-in display 2880×1800 + one or two external 2560×1440 monitors
 
 ---
 
-## 二、关键难点与解法(都踩过坑)
+## 1. Background and Goals
 
-### 1. 构建依赖缺 wireplumber-0.5 ❌→ 补丁降级到 0.4 ✅
-- Noctalia v5 构建需要 `wireplumber-0.5` 头文件,Ubuntu 24.04 只有 `wireplumber-0.4`。
-- **解法**: 改 `meson.build` 用 `wireplumber-0.4`;`wireplumber_mixer.cpp` 里 3 处 0.5→0.4 API 差异(`wp_core_new` 少一个参数、`wp_core_load_component` 变同步、移除 `_finish`)。
+- **Noctalia**: native C++/Wayland, no Qt/Gtk dependencies, aims to be a first-class niri citizen, and provides bar / launcher / notifications / lock screen / clipboard / wallpaper / tray in one piece.
 
-### 2. 缺 `stb_image_resize2.h` ❌→ 仓库内 vendored ✅
-- 24.04 的 `libstb-dev` 没有这个新头文件,meson 配置阶段报错。
-- **解法**: 从 stb v2.18 把单个头文件 vendor 到 `~/src/noctalia/stb/`,并把 meson 检查指向它。
-
-### 3. 需要 GCC 14 的 `<print>` ❌→ 装 `g++-14` ✅
-- 系统默认 gcc-13 无 `<print>`(C++23)。
-- **解法**: `apt install g++-14`——它是版本化命令,**不接管默认 gcc-13**,不影响系统其他部分。
-
-### 4. 需要 sdbus-c++ v2 ❌→ 源码构建到隔离前缀 ✅
-- Noctalia 用 sdbus-c++ **v2** API(296 处调用),24.04 只有 v1.4.0。
-- **解法**: 从源码构建 sdbus-c++ **v2.3.1**,装到隔离前缀 `~/noctalia-deps`(soname `.so.2`,与系统 v1 `.so.1` 不冲突)。Noctalia 通过 RPATH 链接到它,系统其他程序不受影响。
-
-### 5. 需要 libwayland ≥ 1.23 的 `wl_proxy_get_display` ❌→ 补丁单点调用 ✅
-- 24.04 的 libwayland 是 1.22,缺这个 API。全树只有 `virtual_keyboard_service.cpp:95` 用了它。
-- **解法**: 给 `VirtualKeyboardService` 加 `wl_display*` 成员,由 `bind()` 传入,直接 `wl_display_flush(m_display)`——行为等价。**审查中发现第一版有 bug**(`cleanup()` 把 m_display 置空),修复后复审通过。
-
-### 6. niri spawn 找不到 `noctalia` ❌→ `environment {}` 加 PATH ✅
-- **根因**: niri 进程从登录管理器继承 PATH,**不含 `~/.local/bin`**,所以 `spawn "noctalia"` 静默失败(快捷键全无响应)。
-- **解法**: `config.kdl` 顶部加 `environment { PATH "..." }`,把 `~/.local/bin` 加进 niri 的 PATH。这是**系统性调试**定位的根因。
-
-### 7. 重启后 waybar 又出现 ❌→ mask systemd 服务 ✅
-- **根因**: `/usr/lib/systemd/user/waybar.service` 被发行版预设为 enabled,`WantedBy=graphical-session.target`,每个图形会话自动启动,绕过 niri config。
-- **解法**: `systemctl --user mask waybar.service`(创建指向 /dev/null 的链接,彻底阻止自启,可逆)。**对 GNOME 无影响**(GNOME 不用 waybar)。
-
-### 8. 登录弹 "Disconnected Network" 通知 ❌→ 禁用 nm-applet autostart ✅
-- **根因**: `nm-applet`(NetworkManager 托盘)通过 `/etc/xdg/autostart/nm-applet.desktop` 自启,登录瞬间网络未就绪误报通知。**不是 Noctalia 发的**。
-- **解法**: 在 `~/.config/autostart/nm-applet.desktop` 放用户级覆盖(`Hidden=true`),禁用其自启。GNOME 自带网络指示器,不需要 nm-applet,**对 GNOME 无影响**。
+Noctalia serves as the desktop shell under niri, replacing waybar/fuzzel/dunst/swayidle/swaylock/cliphist/polkit.
 
 ---
 
-## 三、最终配置清单
+## 2. Key Problems and Solutions (all battle-tested)
+
+### 1. Build requires wireplumber-0.5 ❌ → patched down to 0.4 ✅
+- Noctalia v5 needs the `wireplumber-0.5` headers at build time; Ubuntu 24.04 only ships `wireplumber-0.4`.
+- **Fix**: point `meson.build` at `wireplumber-0.4`; 3 API differences in `wireplumber_mixer.cpp` (`wp_core_new` takes one fewer argument, `wp_core_load_component` became synchronous, `_finish` variants removed).
+
+### 2. Missing `stb_image_resize2.h` ❌ → vendored into the repo ✅
+- 24.04's `libstb-dev` lacks this newer header; the meson configure step fails.
+- **Fix**: vendor the single header from stb v2.18 into `~/src/noctalia/stb/` and point the meson check at it.
+
+### 3. `<print>` requires GCC 14 ❌ → install `g++-14` ✅
+- The default gcc-13 lacks `<print>` (C++23).
+- **Fix**: `apt install g++-14` — it installs versioned commands only and does **not** take over the default gcc-13, so nothing else on the system is affected.
+
+### 4. Requires sdbus-c++ v2 ❌ → built from source into an isolated prefix ✅
+- Noctalia uses the sdbus-c++ **v2** API (296 call sites); 24.04 only has v1.4.0.
+- **Fix**: build sdbus-c++ **v2.3.1** from source into the isolated prefix `~/workspaces/window_mananger_ui/noctalia-deps` (soname `.so.2`, so it doesn't clash with the system v1 `.so.1`). Noctalia links to it via RPATH; no other program on the system is affected.
+
+### 5. `wl_proxy_get_display` needs libwayland ≥ 1.23 ❌ → patched down to a single call site ✅
+- 24.04's libwayland is 1.22 and lacks this API. In the entire tree, only `virtual_keyboard_service.cpp:95` uses it.
+- **Fix**: give `VirtualKeyboardService` a `wl_display*` member passed in by `bind()` and call `wl_display_flush(m_display)` directly — behaviorally equivalent. **The first version had a bug caught during review** (`cleanup()` was nulling `m_display`); fixed and re-reviewed.
+
+### 6. niri spawn couldn't find `noctalia` ❌ → add PATH via `environment {}` ✅
+- **Root cause**: the niri process inherits PATH from the login manager, which does **not** include `~/.local/bin`, so `spawn "noctalia"` failed silently (all keybinds appeared dead).
+- **Fix**: add `environment { PATH "..." }` at the top of `config.kdl` to include `~/.local/bin`. Root cause was pinned down through systematic debugging.
+
+### 7. waybar reappeared after reboot ❌ → masked the systemd service ✅
+- **Root cause**: `/usr/lib/systemd/user/waybar.service` is enabled by distro presets with `WantedBy=graphical-session.target`, so it starts with every graphical session, bypassing niri's config.
+- **Fix**: `systemctl --user mask waybar.service` (creates a symlink to /dev/null, fully blocking autostart; reversible). **No impact on GNOME** (GNOME doesn't use waybar).
+
+### 8. "Disconnected Network" notification at login ❌ → disabled nm-applet autostart ✅
+- **Root cause**: `nm-applet` (NetworkManager tray) autostarts via `/etc/xdg/autostart/nm-applet.desktop`; the network isn't ready the instant you log in, so it fires a spurious notification. **It does not come from Noctalia.**
+- **Fix**: user-level override at `~/.config/autostart/nm-applet.desktop` (`Hidden=true`) to disable its autostart. GNOME ships its own network indicator and doesn't need nm-applet, so **no impact on GNOME**.
+
+---
+
+## 3. Final Configuration Inventory
 
 ### niri —— `~/.config/niri/config.kdl`
-- `environment { PATH }`: 加 `~/.local/bin`,让 spawn 能找到 noctalia
-- 三屏输出:
-  - `eDP-1`(内置 2880×1800)→ scale 1.75
-  - `DP-1`(USB-C 外接 2560×1440)→ scale 1
-  - `DP-2`(坞 HDMI 外接 2560×1440)→ scale 1
-- spawn-at-startup: 仅 `noctalia`(绝对路径)+ dbus 环境更新
-- 快捷键: `Mod+Space`/`Mod+D` → Noctalia 启动器;`Super+Alt+L` → Noctalia 锁屏
-- 原有: 圆角、阴影、动画、prefer-no-csd、gaps 10
+- `environment { PATH }`: added `~/.local/bin` so spawn can find noctalia
+- Three outputs:
+  - `eDP-1` (built-in 2880×1800) → scale 1.75
+  - `DP-1` (USB-C external 2560×1440) → scale 1
+  - `DP-2` (dock HDMI external 2560×1440) → scale 1
+- spawn-at-startup: only `noctalia` (absolute path) + dbus environment refresh
+- Keybinds: `Mod+Space`/`Mod+D` → Noctalia launcher; `Super+Alt+L` → Noctalia lock screen
+- Kept from before: rounded corners, shadows, animations, prefer-no-csd, gaps 10
 
 ### Noctalia —— `~/.config/noctalia/config.toml`
-- 主题: `builtin = "Noctalia"`(默认配色,用户选择保持)
-- bar: thickness 44, widget_spacing 10, scale 1.3(图标调大)
+- Theme: `builtin = "Noctalia"` (default palette — user's choice to keep)
+- bar: thickness 44, widget_spacing 10, scale 1.3 (larger icons)
 
-### 隔离工具链(不污染系统)
-- `~/noctalia-deps/`: sdbus-c++ v2.3.1 隔离安装(头文件+libs+pkg-config)
-- `~/.local/bin/noctalia`: 编译产物(27MB)
-- `~/workspaces/window_mananger_ui/noctalia`: 源码 + 补丁
+### Isolated toolchain (no system pollution)
+- `~/workspaces/window_mananger_ui/noctalia-deps/`: isolated sdbus-c++ v2.3.1 install (headers + libs + pkg-config)
+- `~/.local/bin/noctalia`: build artifact (27 MB)
+- `~/workspaces/window_mananger_ui/noctalia`: source + patches
 
-### 系统级覆盖(记录在案)
-- `systemctl --user mask waybar.service` → waybar 不自动启动
-- `~/.config/autostart/nm-applet.desktop` (Hidden=true) → nm-applet 不自启
-- 详见 `docs/autostart-overrides.md`
+### System-level overrides (on record)
+- `systemctl --user mask waybar.service` → waybar never autostarts
+- `~/.config/autostart/nm-applet.desktop` (`Hidden=true`) → nm-applet doesn't autostart
+- See `docs/autostart-overrides.md` for details
 
 ---
 
-## 四、后续更新上游版本
+## 4. Updating to Future Upstream Versions
 
-源码仓库(`~/workspaces/window_mananger_ui/noctalia`)的兼容补丁已提交到本地分支 **`ubuntu-24.04`**
-(基于上游 `713e6ca`,包含 wireplumber-0.4 / libwayland-1.22 / vendored stb 全部改动 + `update.sh`)。
+The compatibility patches in the source repo (`~/workspaces/window_mananger_ui/noctalia`) are committed on the local branch **`ubuntu-24.04`** (based on upstream `713e6ca`; contains all wireplumber-0.4 / libwayland-1.22 / vendored-stb changes plus `update.sh`).
 
-更新只需一条命令:
+Updating is a single command:
 
 ```bash
 cd ~/workspaces/window_mananger_ui/noctalia && ./update.sh
 ```
 
-它做的事情: `git fetch` → rebase 补丁到 `origin/main`(冲突时逐个解决) → 全新 meson 配置
-(g++-14 + `~/noctalia-deps` 的 sdbus-c++ v2 + RPATH)→ 编译 → 安装到 `~/.local/bin/noctalia`。
-完成后重启 noctalia(或注销重登)生效。
+What it does: `git fetch` → rebase the patches onto `origin/main` (resolve conflicts one by one) → fresh meson setup (g++-14 + sdbus-c++ v2 from `~/workspaces/window_mananger_ui/noctalia-deps` + RPATH) → build → install to `~/.local/bin/noctalia`.
+Restart noctalia (or log out and back in) for changes to take effect.
 
-注意:
-- Ubuntu 24.04 不会升级 wireplumber-0.5 / libwayland-1.23,这些补丁**长期需要**,每次 rebase 都要带着。
-- rebase 冲突高发区: `src/pipewire/wireplumber_mixer.cpp`(0.5→0.4 API)、`src/wayland/virtual_keyboard_service.*`(避开 `wl_proxy_get_display`)。
-- 旧的 `build-release/` 记录的是搬家前的路径(`~/src/noctalia`),已被脚本删除重建,无需保留。
+Notes:
+- Ubuntu 24.04 will not upgrade to wireplumber-0.5 / libwayland-1.23; these patches are **needed long-term** and must be carried through every rebase.
+- Rebase conflict hotspots: `src/pipewire/wireplumber_mixer.cpp` (0.5→0.4 API) and `src/wayland/virtual_keyboard_service.*` (avoiding `wl_proxy_get_display`).
 
 ---

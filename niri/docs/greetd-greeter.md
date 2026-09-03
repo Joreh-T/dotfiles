@@ -1,134 +1,94 @@
-# greetd + noctalia-greeter 部署记录(2026-08-27)
+# greetd + noctalia-greeter Deployment Notes (2026-08-27)
 
-从 GDM3 迁移到 greetd + noctalia-greeter 的完整记录。系统状态 + 排坑结论,重建/排障时先读这里。
+A complete record of migrating from GDM3 to greetd + noctalia-greeter. System state + pitfall conclusions — read this first when rebuilding or troubleshooting.
 
-## 系统布局
+## System Layout
 
-| 组件 | 位置 | 说明 |
+| Component | Location | Notes |
 |---|---|---|
-| greeter 二进制/库/assets | `/opt/greeter-deps/` | 755,greetd 用户可读;含 wlroots 0.20 工具链(见下) |
-| greetd 配置 | `/etc/greetd/config.toml` | command 指向 `/opt/greeter-deps/bin/noctalia-greeter-session`,user=`_greetd`(Ubuntu 打包惯例,uid 126) |
-| greeter 状态 | `/var/lib/noctalia-greeter/` | greeter.toml + sync.toml;`noctalia msg greeter-sync` 同步壁纸/配色 |
-| 切换脚本 | `~/.local/bin/noctalia-greeter-switch` | `switch\|rollback\|status`;源在 dotfiles/bin,setup.sh 链接 |
-| 源码 | `~/workspaces/window_mananger_ui/noctalia-greeter` | 本地有 2 个 patch(meson.build stb include + session wrapper LD_LIBRARY_PATH),未建分支提交 |
-| display-manager 别名 | `/etc/systemd/system/display-manager.service` | → greetd.service;回滚=指回 gdm.service |
-| **getty@tty1** | `systemctl mask getty@tty1.service` | **已 mask,勿恢复!** 见下 |
+| Greeter binary/libs/assets | `/opt/greeter-deps/` | mode 755, readable by the greetd user; contains the wlroots 0.20 toolchain (see below) |
+| greetd config | `/etc/greetd/config.toml` | `command` points to `/opt/greeter-deps/bin/noctalia-greeter-session`, `user=_greetd` (Ubuntu packaging convention, uid 126) |
+| Greeter state | `/var/lib/noctalia-greeter/` | greeter.toml + sync.toml; `noctalia msg greeter-sync` syncs wallpaper/palette |
+| Switch script | `~/.local/bin/noctalia-greeter-switch` | `switch\|rollback\|status`; source lives in dotfiles/bin, linked by setup.sh |
+| Source | `~/workspaces/window_mananger_ui/noctalia-greeter` | 2 local patches (meson.build stb include + session wrapper LD_LIBRARY_PATH), not yet committed on a branch |
+| display-manager alias | `/etc/systemd/system/display-manager.service` | → greetd.service; rollback = point it back at gdm.service |
+| **getty@tty1** | `systemctl mask getty@tty1.service` | **masked — do not restore!** See below |
 
-## 关键坑(按严重程度)
+## Key Pitfalls (by severity)
 
-1. **getty@tty1 与 greetd 抢 VT → 登录死循环**(已修复,mask)。
-   症状:输密码进桌面 10-30 秒后被弹回 greeter,无限循环。
-   机制:greetd 会话占用 tty1 → getty@tty1 退出 → systemd 重启 getty → getty 抢回
-   tty1,给会话发 SIGHUP → logind 判会话结束 → greetd 拉新 greeter → 循环。
-   Ubuntu 的 GDM 包自己处理了这个互斥,greetd 没有。
-   niri 收到 SIGHUP 的证据路径:用带日志的 wrapper(Exec 指向写 /tmp 日志的脚本)抓到。
+1. **getty@tty1 and greetd fight over the VT → login loop** (fixed, masked).
+   Symptom: you enter your password, land on the desktop, and 10–30 s later you're bounced back to the greeter — forever.
+   Mechanism: the greetd session occupies tty1 → getty@tty1 exits → systemd restarts getty → getty reclaims tty1 and sends SIGHUP to the session → logind concludes the session ended → greetd spawns a fresh greeter → loop.
+   Ubuntu's GDM package handles this mutual exclusion itself; greetd does not.
+   How we caught niri receiving SIGHUP: a logging wrapper (Exec pointing at a script that writes to /tmp).
 
-2. **greetd 下必须用 `niri-session`,不是 `niri --session`**。
-   `/usr/share/wayland-sessions/niri.desktop` 的 `Exec=niri-session`(当前状态)。
-   - `niri-session` 走 `niri.service` 用户单元 → graphical-session.target +
-     xdg-desktop-autostart.target 全链(portal、im-launch 等都靠它)。
-   - `niri --session` 只做环境导入,target 链不起来(它们 RefuseManualStart,
-     只能由单元依赖拉起),fcitx5/portal 全废。
-   - 排查此问题时曾误判 niri-session 是循环根因,实际凶手是 getty(见 1)。
+2. **Under greetd you must use `niri-session`, not `niri --session`.**
+   `/usr/share/wayland-sessions/niri.desktop` currently has `Exec=niri-session`.
+   - `niri-session` goes through the `niri.service` user unit → the full graphical-session.target + xdg-desktop-autostart.target chain (portals, im-launch, etc. all depend on it).
+   - `niri --session` only imports the environment; the targets never chain up (they RefuseManualStart — only unit dependencies can pull them in), so fcitx5/portals are all dead.
+   - While debugging this we initially mis-blamed niri-session as the root cause of the loop; the real culprit was getty (see 1).
 
-3. **IM 变量(im-config)在 Wayland 下与 fcitx5 冲突**(已修复):
-   - `~/.xinputrc` → `run_im none`:掐断 im-config 导出 GTK_IM_MODULE 的链
-     (niri-session 的 login shell 会 source /etc/profile.d/im-config_wayland.sh)。
-   - `~/.config/autostart/im-launch.desktop` → `Hidden=true`(禁 im-launch autostart)。
-   - niri `config.kdl`:`spawn-at-startup "fcitx5"` 直接拉起;environment 块只留
-     QT_IM_MODULE + XMODIFIERS(GTK 走 niri 原生 Wayland IM 前端,fcitx5 官方推荐)。
-   - 改环境变量类的东西后 `systemctl --user unset-environment GTK_IM_MODULE ...`
-     清用户管理器残留(它不会自清)。
+3. **IM variables (im-config) conflict with fcitx5 under Wayland** (fixed):
+   - `~/.xinputrc` → `run_im none`: cuts the chain where im-config exports GTK_IM_MODULE (niri-session's login shell sources `/etc/profile.d/im-config_wayland.sh`).
+   - `~/.config/autostart/im-launch.desktop` → `Hidden=true` (disables im-launch autostart).
+   - niri `config.kdl`: `spawn-at-startup "fcitx5"` starts it directly; the environment block keeps only QT_IM_MODULE + XMODIFIERS (GTK goes through niri's native Wayland IM frontend — fcitx5's official recommendation).
+   - After changing anything environment-variable shaped, run `systemctl --user unset-environment GTK_IM_MODULE ...` to clear leftovers from the user manager (it does not clean itself).
 
-4. **构建工具链**(Ubuntu 24.04 noble,参考 `update.sh` 不存在,手动链):
-   wlroots 0.20 wrap 全家桶装进 /opt/greeter-deps(wayland 1.26.9/libdrm 2.4.134/
-   libdisplay-info/libliftoff/pixman/xkbcommon);noble 的 meson 1.3.2 不够 →
-   `~/.local/opt/meson-venv`(venv meson 1.12,软链 ~/.local/bin/meson);
-   stb 头手装 /opt/greeter-deps/include/stb/ + meson.build patch;wlroots 间接依赖
-   靠 session wrapper 的 LD_LIBRARY_PATH(DT_RUNPATH 不传递)。
-   详见记忆 noctalia-daemon-debugging。
+4. **Build toolchain** (Ubuntu 24.04 noble; no reference `update.sh` exists here, manual chain):
+   the whole wlroots 0.20 wrap suite installed into `/opt/greeter-deps` (wayland 1.26.9 / libdrm 2.4.134 / libdisplay-info / libliftoff / pixman / xkbcommon); noble's meson 1.3.2 is too old → `~/.local/opt/meson-venv` (venv meson 1.12, symlinked as `~/.local/bin/meson`);
+   stb headers hand-installed into `/opt/greeter-deps/include/stb/` + a meson.build patch; wlroots's indirect dependencies rely on the session wrapper's LD_LIBRARY_PATH (DT_RUNPATH doesn't propagate).
+   See the `noctalia-daemon-debugging` memory note for details.
 
-## 壁纸轮换改为 systemd timer 调度(2026-08-27)
+## Wallpaper Rotation Moved to a systemd Timer (2026-08-27)
 
-noctalia 内置 automation 在 shell 启动时强制换一张(还排除当前图),导致
-"greeter 显示 X、登录后桌面变 Y"的不和谐。改用 systemd user timer 接管轮换:
-- `dotfiles/systemd/user/wallpaper-rotate.{timer,service}`(setup.sh 软链),
-  每 2h 整点 `noctalia msg wallpaper-next`(alphabetical 顺序),Persistent 补跑,
-  shell 不在时安静失败等下个周期
-- `[wallpaper.automation] enabled = false`(内置彻底关闭)
-- 效果:换图只因时间到,不因 shell 启动;greeter 与桌面在登录边界永远一致
+Noctalia's built-in automation force-rotates once at shell startup (and excludes the current image), which caused the jarring "greeter shows X, desktop becomes Y after login". A systemd user timer now owns rotation:
+- `dotfiles/systemd/user/wallpaper-rotate.{timer,service}` (symlinked by setup.sh): every 2 h on the hour runs `noctalia msg wallpaper-next` (alphabetical order), `Persistent=` catch-up, and fails quietly when the shell isn't running, waiting for the next cycle.
+- `[wallpaper.automation] enabled = false` (the built-in path is fully off).
+- Effect: wallpapers change because time has passed, not because the shell started; greeter and desktop always agree at the login boundary.
 
-## greeter 壁纸跟随轮换:零提权轻方案(2026-08-27)
+## Greeter Wallpaper Follows Rotation: Zero-Privilege Lightweight Scheme (2026-08-27)
 
-不动 polkit、不用官方 greeter-sync 的拷贝链路。greeter 壁纸路径直接指向
-`~/Pictures/Wallpapers/` 里的原图;noctalia 轮换壁纸时由 hook 改
-`/var/lib/noctalia-greeter/sync.toml` 的 `path` 行(外科手术式,其余字节不动),
-下次 greeter 启动自然读到新图。
+No polkit changes, no copy chain from the official greeter-sync. The greeter's wallpaper path points directly at the originals in `~/Pictures/Wallpapers/`; when noctalia rotates the wallpaper, a hook rewrites just the `path` line in `/var/lib/noctalia-greeter/sync.toml` (surgically — every other byte is untouched), and the next greeter start naturally picks up the new image.
 
-前提 ACL(一次性,sudo):
-- `setfacl -m u:_greetd:x /home/joreh /home/joreh/Pictures` (目录穿越)
-- `setfacl -R -m u:_greetd:rX,d:u:_greetd:rX /home/joreh/Pictures/Wallpapers` (读图+新文件默认)
-- `setfacl -m u:joreh:rw /var/lib/noctalia-greeter/sync.toml` (hook 就地写;
-  属主仍 _greetd,目录不加写权限 → 不能原子替换,就地 open("w") 单次写入)
+One-time ACL prerequisites (sudo):
+- `setfacl -m u:_greetd:x /home/joreh /home/joreh/Pictures` (directory traversal)
+- `setfacl -R -m u:_greetd:rX,d:u:_greetd:rX /home/joreh/Pictures/Wallpapers` (read the images + default ACL for new files)
+- `setfacl -m u:joreh:rw /var/lib/noctalia-greeter/sync.toml` (the hook writes in place; the owner stays `_greetd` and the directory gets no write permission → atomic replacement is impossible, so it's a single in-place `open("w")` write)
 
-链路: noctalia `[hooks] wallpaper_changed = ~/.local/bin/greeter-wallpaper-follow`
-(dotfiles/bin/ 同名,setup.sh 已链接) → env NOCTALIA_WALLPAPER_PATH/CONNECTOR →
-脚本只接受 `~/Pictures/Wallpapers` 内的文件(路径域校验) → 更新
-`[appearance.wallpaper]` + `[appearance.wallpapers.<connector>]` 的 path →
-幂等(未变不写)。日志 `~/.cache/noctalia/greeter-follow.log`。
+Chain: noctalia `[hooks] wallpaper_changed = ~/.local/bin/greeter-wallpaper-follow` (same-named script in dotfiles/bin, linked by setup.sh) → env NOCTALIA_WALLPAPER_PATH/CONNECTOR → the script only accepts files inside `~/Pictures/Wallpapers` (path-domain validation) → updates the `path` under `[appearance.wallpaper]` + `[appearance.wallpapers.<connector>]` → idempotent (no write when unchanged). Log: `~/.cache/noctalia/greeter-follow.log`.
 
-注意:
-- 只跟随壁纸;配色/布局仍是上次 greeter-sync 的快照,要刷新跑一次
-  `noctalia msg greeter-sync`(它会把 path 写回拷贝模式,下次轮换 hook 自动
-  接管回直连模式,共存自洽)
-- greeter.toml 的 `wallpaper_blur`(背景模糊)独立于壁纸来源,两者叠加生效
-- 轮换事件按显示器分别触发(eDP-1/DP-1 各一次),全局 path 始终跟随最新
+Notes:
+- Only the wallpaper follows; palette/layout remain the last greeter-sync snapshot. To refresh, run `noctalia msg greeter-sync` once (it writes the path back to copy mode; the next rotation hook automatically takes over direct mode again — the two modes coexist consistently).
+- `wallpaper_blur` in greeter.toml (background blur) is independent of the wallpaper source; the two stack.
+- Rotation events fire per-display (eDP-1 and DP-1 each get one); the global `path` always follows the latest.
 
-## 登录背景模糊(2026-08-27,本地功能)
+## Login Background Blur (2026-08-27, local feature)
 
-greeter fork 的 `ubuntu-24.04` 分支(commit 51e2cb2)从 noctalia shell 移植了
-BlurCache/CachedLayer(greeter 原本只有 blur shader 是完整实现,缓存层是 stub):
-壁纸纹理加载后一次性模糊到 <=1024px FBO(2 轮分离高斯),显示模糊纹理。
-- 配置键: `/var/lib/noctalia-greeter/greeter.toml` `[appearance] wallpaper_blur`
-  = 0.0..1.0(编译默认 0.55,0=关闭);与 password_style 一样独立于 scheme 来源,
-  greeter-sync 不会覆盖它
-- 重建: `cd ~/workspaces/window_mananger_ui/noctalia-greeter && ninja -C build-release`
-  然后 `sudo env PATH=$HOME/.local/opt/meson-venv/bin:$PATH meson install -C build-release`
-  (必须 meson install,不能只拷二进制)
-- 生效时机: greeter 是登录时才启动的进程,改完下次注销/重启即可见
+The greeter fork's `ubuntu-24.04` branch (commit 51e2cb2) ported BlurCache/CachedLayer from the noctalia shell (the greeter previously had only the complete blur shader; its cache layer was a stub): the wallpaper texture is blurred once at load time into a ≤1024px FBO (2-pass separable gaussian), and the blurred texture is what gets displayed.
+- Config key: `/var/lib/noctalia-greeter/greeter.toml`, `[appearance] wallpaper_blur` = 0.0..1.0 (compiled default 0.55, 0 = off); like `password_style` it is independent of the scheme source, and greeter-sync won't overwrite it.
+- Rebuild: `cd ~/workspaces/window_mananger_ui/noctalia-greeter && ninja -C build-release`, then `sudo env PATH=$HOME/.local/opt/meson-venv/bin:$PATH meson install -C build-release` (`meson install` is mandatory — don't just copy the binary).
+- Takes effect at: the greeter only starts at login, so log out / reboot to see it.
 
-## greeter-sync(壁纸/配色同步到登录界面)的三层前提(2026-08-27 补全)
+## Three Prerequisites for greeter-sync (wallpaper/palette sync to the login screen) (completed 2026-08-27)
 
-1. noctalia 只在 `/usr/bin`、`/usr/local/bin` 找 `noctalia-greeter` 和
-   `noctalia-greeter-apply-appearance`(守护进程启动时注册 IPC,找不到则
-   `noctalia msg greeter-sync` 报 unknown command)→ 已软链 /opt 真身到 /usr/local/bin。
-2. polkit action 必须装: `/usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy`
-   (从 /opt/greeter-deps/share/polkit-1/actions/ 复制,exec.path 已指向 /opt 真身)。
-3. 会话内要有 polkit 认证代理,否则 pkexec 退回文本认证而守护进程无 tty →
-   noctalia config `polkit_agent = true`(dotfiles 已改)。
-验证: `noctalia msg greeter-sync` 返回 ok,`/var/lib/noctalia-greeter/sync.toml` 的
-scheme 变 "Synced"、wallpaper-*.png 出现。
+1. noctalia only looks for `noctalia-greeter` and `noctalia-greeter-apply-appearance` in `/usr/bin` and `/usr/local/bin` (the daemon registers IPC at startup; otherwise `noctalia msg greeter-sync` reports "unknown command") → the /opt originals are symlinked into `/usr/local/bin`.
+2. The polkit action must be installed: `/usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy` (copied from `/opt/greeter-deps/share/polkit-1/actions/`; `exec.path` already points at the /opt original).
+3. A polkit authentication agent must exist in the session, otherwise pkexec falls back to text authentication while the daemon has no tty → noctalia config `polkit_agent = true` (already set in dotfiles).
 
-## 遗留小问题
+Verification: `noctalia msg greeter-sync` returns ok, the scheme in `/var/lib/noctalia-greeter/sync.toml` becomes "Synced", and `wallpaper-*.png` appears.
 
-- 开机第一个 greeter 实例偶发闪崩(greetd 日志 "greeter exited without creating a
-  session"),greetd 自动重启后正常。不影响使用,待上游修复或下次排查。
-- greeter 源码的 2 个本地 patch 建议仿 noctalia fork 模式建 `ubuntu-24.04` 分支提交。
-- greeter 启动时 amdgpu 报 DMCUB error(PRIORITY=3,每greeter启动~8条,journal可查):
-  wlroots 0.20 对 renoir 选的缓冲 modifier 不可扫描输出,功能正常,纯噪音。
-  注:cmdline `loglevel=3` 单独不够 —— Ubuntu 的 /etc/sysctl.d/10-console-messages.conf
-  会在开机 ~0.5s 把 kernel.printk 抬回 4 4 1 7。已加
-  /etc/sysctl.d/99-console-loglevel-3.conf (kernel.printk=3 4 1 7) 压制;
-  根治需上游修 wlroots/greeter modifier 协商。
-- niri-session(/usr/local/bin,手动安装)已改"只导入已设置变量"的 import-environment:
-  裸调被 systemd 弃用(stderr 警告到 tty),但固定名单又会让 systemctl 对尚不存在
-  的 WAYLAND_DISPLAY/DISPLAY 打 "$VAR not set, ignoring" 到 tty1 —— 这俩由 niri
-  session 模式启动后自行导入,niri-session 阶段必然为空。现用 for+eval 过滤。
-  原版备份 .bak 同目录。niri 升级重装时注意保留此 patch。
+## Remaining Minor Issues
 
-## 回滚到 GDM
+- The first greeter instance after boot occasionally crashes (greetd log: "greeter exited without creating a session"); greetd restarts it and everything is fine. Harmless — waiting on an upstream fix or the next round of debugging.
+- The 2 local patches in the greeter source should be committed on an `ubuntu-24.04` branch, mirroring the noctalia fork pattern.
+- amdgpu logs DMCUB errors at greeter start (PRIORITY=3, ~8 per greeter start, visible in the journal): wlroots 0.20 picks a non-scanout buffer modifier for renoir; everything works, it's pure noise.
+  Note: cmdline `loglevel=3` alone is not enough — Ubuntu's `/etc/sysctl.d/10-console-messages.conf` raises `kernel.printk` back to `4 4 1 7` about 0.5 s after boot. Added `/etc/sysctl.d/99-console-loglevel-3.conf` (`kernel.printk=3 4 1 7`) to suppress it; the real fix belongs upstream in wlroots/greeter modifier negotiation.
+- niri-session (`/usr/local/bin`, manually installed) was changed to an import-environment that "only imports variables that are already set": bare invocation is deprecated by systemd (stderr warning to the tty), but a fixed list would make systemctl print "$VAR not set, ignoring" to tty1 for WAYLAND_DISPLAY/DISPLAY, which don't exist yet — those are imported by niri's own session mode after startup and are necessarily empty at the niri-session stage. Now filtered with a for+eval loop.
+  The original is backed up as `.bak` in the same directory. Preserve this patch when a niri upgrade reinstalls it.
+
+## Rolling Back to GDM
 
 ```bash
-noctalia-greeter-switch rollback   # 或: sudo ln -sfn /lib/systemd/system/gdm.service /etc/systemd/system/display-manager.service && sudo reboot
+noctalia-greeter-switch rollback   # or: sudo ln -sfn /lib/systemd/system/gdm.service /etc/systemd/system/display-manager.service && sudo reboot
 ```
-GDM3 未卸载,getty@tty1 保持 mask 也不影响 GDM(GDM 用自己的互斥机制)。
+GDM3 is not uninstalled, and keeping getty@tty1 masked doesn't affect GDM (GDM has its own mutual-exclusion mechanism).
