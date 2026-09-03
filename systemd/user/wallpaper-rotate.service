@@ -1,8 +1,12 @@
 [Unit]
-Description=Switch to the next wallpaper via noctalia IPC
+Description=Switch to a random wallpaper via noctalia IPC
 
 [Service]
 Type=oneshot
 # Silent no-op when the shell is not running (e.g. sitting at the greeter):
 # the wallpaper stays put and the next timer tick retries.
-ExecStart=/bin/sh -c 'noctalia msg wallpaper-next || true'
+# wallpaper-random = shuffle mode: per-directory "seen" state, no repeats until
+# the whole pool is exhausted, then reshuffle (noctalia persists the state).
+# (wallpaper-next would walk case-insensitive path order, i.e. hundreds of
+# consecutive Bing images before ever reaching Spotlight/.)
+ExecStart=/bin/sh -c 'noctalia msg wallpaper-random || true'
