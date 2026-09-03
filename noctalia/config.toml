@@ -375,14 +375,14 @@ delete   = ["del"]
 
 [bar.main]
 position           = "top"          # top | bottom | left | right
-thickness          = 40
+thickness          = 44
 background_opacity = 0.7
 radius             = 20
 margin_ends        = 280
 margin_edge        = 1
 padding            = 15
 widget_spacing     = 9
-scale              = 1.2
+scale              = 1.25
 shadow             = true
 auto_hide          = false
 # smart_auto_hide    = false       # show when the active workspace is empty; hide when it has windows
