@@ -46,6 +46,21 @@ shared_gl_context     = true         # startup-only; false isolates GPU contexts
 # lang                = "en"
 # avatar_path         = "~/Pictures/avatar.png"
 
+# Screenshot capture policy + built-in annotator (v5.0.1+). Every capture
+# (region/fullscreen, incl. keybinds below) opens the annotation editor first;
+# Enter/Done delivers per this policy, Copy/Save inside the editor deliver
+# immediately with an -annotated filename stem.
+[shell.screenshot]
+save_to_file      = true
+copy_to_clipboard = true
+directory         = "~/Pictures/Screenshots"
+annotate          = true
+
+# Dismissing a toast also removes it from notification history (default true
+# keeps dismissed notifications in the history panel).
+[notification]
+keep_dismissed_in_history = false
+
 [shell.privacy]
 mic_filter_regex = ""                # microphone app names to ignore in privacy indicators and OSD
 cam_filter_regex = ""                # camera app names to ignore in privacy indicators and OSD
