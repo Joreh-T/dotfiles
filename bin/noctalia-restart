@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Safely restart the running noctalia shell.
+#
+# Waits for the old instance to fully exit before starting a new one --
+# starting too early hits the single-instance lock ("error: noctalia is
+# already running") and leaves you with no shell at all. Output is
+# discarded instead of creating stray nohup.out files.
+set -euo pipefail
+
+BIN="$HOME/.local/bin/noctalia"
+
+if pgrep -x noctalia >/dev/null; then
+    pkill -x noctalia
+    for _ in $(seq 1 100); do # wait up to 10s for a clean exit
+        pgrep -x noctalia >/dev/null || break
+        sleep 0.1
+    done
+    if pgrep -x noctalia >/dev/null; then
+        echo "noctalia did not exit within 10s; aborting restart." >&2
+        exit 1
+    fi
+fi
+
+setsid nohup "$BIN" >/dev/null 2>&1 &
+sleep 1
+
+if pgrep -x noctalia >/dev/null; then
+    echo "noctalia restarted (pid $(pgrep -x noctalia | head -1))."
+else
+    echo "noctalia failed to start; check ~/.cache/noctalia/noctalia.log" >&2
+    exit 1
+fi
