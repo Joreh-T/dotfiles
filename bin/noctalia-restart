@@ -16,8 +16,20 @@ if pgrep -x noctalia >/dev/null; then
         sleep 0.1
     done
     if pgrep -x noctalia >/dev/null; then
-        echo "noctalia did not exit within 10s; aborting restart." >&2
-        exit 1
+        # Graceful stop can hang when SIGTERM lands during a plugin git sync
+        # (process blocks in a pipe read and never finishes shutting down).
+        # Escalate to SIGKILL -- the single-instance lock is a kernel-side
+        # flock and is released by process death, so this is safe here.
+        echo "graceful stop timed out after 10s; sending SIGKILL..." >&2
+        pkill -KILL -x noctalia
+        for _ in $(seq 1 30); do
+            pgrep -x noctalia >/dev/null || break
+            sleep 0.1
+        done
+        if pgrep -x noctalia >/dev/null; then
+            echo "noctalia survived SIGKILL; refusing to start." >&2
+            exit 1
+        fi
     fi
 fi
 
