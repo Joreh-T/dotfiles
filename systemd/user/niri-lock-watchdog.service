@@ -3,4 +3,10 @@ Description=Recover dead niri session lock (noctalia died while locked)
 
 [Service]
 Type=oneshot
+# The rescued swaylock/noctalia are children of the script; systemd's
+# default KillMode=control-group sweeps the whole unit cgroup when the
+# oneshot exits, killing the lock we just put up (watchdog re-rescued in
+# a loop every tick until this was set). KillMode=process leaves the
+# spawned children running after the check finishes.
+KillMode=process
 ExecStart=%h/dotfiles/bin/niri-lock-watchdog
