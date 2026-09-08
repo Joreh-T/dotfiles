@@ -57,12 +57,22 @@ session_is_locked() {
 }
 
 spawn_fallback_lock() {
-    # -C /dev/null: ignore ~/.config/swaylock/config, which contains
-    # options this swaylock build does not support (layout-width).
+    # -C /dev/null: keep the rescue independent of ~/.config/swaylock/config.
+    # --indicator-idle-visible: show the unlock ring immediately -- without
+    # it the screen stays blank until a keypress and looks like a dead
+    # display. -i: use the current noctalia wallpaper as the background so
+    # the rescue lock matches the desktop (fall back to a flat color).
     # 9>&-: must NOT inherit the restart flock -- a long-lived child
     # holding fd 9 pins the lock and silently disables every later
     # restart (found in the second live drill).
-    setsid swaylock -C /dev/null -c 1a1a1a </dev/null >/dev/null 2>&1 9>&- &
+    local args=(-C /dev/null --indicator-idle-visible -c 1a1a1a)
+    local wp
+    wp=$(sed -n 's/^path = "\(.*\)"$/\1/p' \
+        "$HOME/.local/state/noctalia/settings.toml" 2>/dev/null | head -1)
+    if [ -n "$wp" ] && [ -f "$wp" ]; then
+        args+=(-i "$wp" --inside-color 00000000 --ring-color cba6f7e6)
+    fi
+    setsid swaylock "${args[@]}" </dev/null >/dev/null 2>&1 9>&- &
 }
 
 LOCKED=0
