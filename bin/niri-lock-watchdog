@@ -17,6 +17,10 @@ if pgrep -x -u "$(id -u)" noctalia >/dev/null; then
 fi
 
 for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$(id -u)" '$2 == u {print $1}'); do
+    # Only wayland sessions: tty/SSH sessions can carry a stale LockedHint
+    # (set by a lock request from there, never cleared by a swaylock unlock)
+    # and would trigger a spurious force-lock.
+    [ "$(loginctl show-session "$sid" -p Type --value 2>/dev/null)" = wayland ] || continue
     if [ "$(loginctl show-session "$sid" -p LockedHint --value 2>/dev/null)" = yes ]; then
         echo "session $sid is locked but noctalia is not running; recovering"
         exec "$HOME/dotfiles/bin/noctalia-restart"

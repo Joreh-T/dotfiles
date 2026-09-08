@@ -22,7 +22,7 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 # Only one restart at a time (manual run racing the niri-lock-watchdog
 # timer): a concurrent run exits quietly, the first one finishes the job.
 exec 9>"$XDG_RUNTIME_DIR/noctalia-restart.lock"
-flock -n 9 || exit 0
+flock -n 9 || { echo "another noctalia-restart holds the lock; skipping" >&2; exit 0; }
 
 # Derive WAYLAND_DISPLAY from the niri IPC socket name
 # (niri.<display>.<pid>.sock) when running outside the graphical session.
@@ -39,11 +39,16 @@ if [ -z "${WAYLAND_DISPLAY:-}" ]; then
     fi
 fi
 
-# True if any local session reports LockedHint=yes (set by niri/noctalia on
-# lock; stays yes while the compositor keeps the session locked).
+# True if a *graphical* session of ours reports LockedHint=yes. Only
+# wayland sessions count: the hint is set per-session (a `noctalia msg
+# session lock` run from an SSH/tty session marks THAT session too) and is
+# never cleared when the unlock comes from a different client (swaylock),
+# so tty sessions can carry a stale "yes" and would force-lock an
+# unlocked desktop (found in the third live drill).
 session_is_locked() {
     local sid
-    for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}'); do
+    for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$(id -u)" '$2 == u {print $1}'); do
+        [ "$(loginctl show-session "$sid" -p Type --value 2>/dev/null)" = wayland ] || continue
         if [ "$(loginctl show-session "$sid" -p LockedHint --value 2>/dev/null)" = yes ]; then
             return 0
         fi
@@ -54,7 +59,10 @@ session_is_locked() {
 spawn_fallback_lock() {
     # -C /dev/null: ignore ~/.config/swaylock/config, which contains
     # options this swaylock build does not support (layout-width).
-    setsid swaylock -C /dev/null -c 1a1a1a </dev/null >/dev/null 2>&1 &
+    # 9>&-: must NOT inherit the restart flock -- a long-lived child
+    # holding fd 9 pins the lock and silently disables every later
+    # restart (found in the second live drill).
+    setsid swaylock -C /dev/null -c 1a1a1a </dev/null >/dev/null 2>&1 9>&- &
 }
 
 LOCKED=0
@@ -110,7 +118,7 @@ fi
 
 log_lines=$(wc -l < "$LOG" 2>/dev/null || echo 0)
 
-setsid nohup "$BIN" >/dev/null 2>&1 &
+setsid nohup "$BIN" >/dev/null 2>&1 9>&- &
 sleep 1
 
 if ! pgrep -x noctalia >/dev/null; then
