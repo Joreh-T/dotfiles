@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Detect the "dead session lock" state and recover automatically.
+#
+# niri keeps the session locked forever if the lock client (noctalia) dies
+# while locked: every output turns solid dark red and there is no way to
+# unlock. Run from a systemd user timer: if any of our sessions is locked
+# but noctalia is gone, delegate to noctalia-restart, which spawns a
+# swaylock fallback lock and brings the shell back.
+#
+# Fast path is a single pgrep while the shell is running; the loginctl
+# queries only happen when it is not. An *unlocked* session without a
+# shell is cosmetic and deliberately left alone.
+set -euo pipefail
+
+if pgrep -x -u "$(id -u)" noctalia >/dev/null; then
+    exit 0
+fi
+
+for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk -v u="$(id -u)" '$2 == u {print $1}'); do
+    if [ "$(loginctl show-session "$sid" -p LockedHint --value 2>/dev/null)" = yes ]; then
+        echo "session $sid is locked but noctalia is not running; recovering"
+        exec "$HOME/dotfiles/bin/noctalia-restart"
+    fi
+done

@@ -1,0 +1,6 @@
+[Unit]
+Description=Recover dead niri session lock (noctalia died while locked)
+
+[Service]
+Type=oneshot
+ExecStart=%h/dotfiles/bin/niri-lock-watchdog
