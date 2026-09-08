@@ -1,13 +1,73 @@
 #!/usr/bin/env bash
 # Safely restart the running noctalia shell.
 #
-# Waits for the old instance to fully exit before starting a new one --
-# starting too early hits the single-instance lock ("error: noctalia is
-# already running") and leaves you with no shell at all. Output is
-# discarded instead of creating stray nohup.out files.
+# - On a bare tty or over SSH (no WAYLAND_DISPLAY), derive the Wayland
+#   display from the running niri's socket so the new instance can connect.
+# - If the session is locked, killing noctalia would leave niri locked
+#   forever behind a solid dark-red screen: per ext-session-lock, a dead
+#   lock client is never auto-unlocked. Spawn swaylock as a live
+#   replacement lock client first, so you get a password prompt instead
+#   (type your password once after the restart to unlock).
+# - Waits for the old instance to fully exit before starting a new one --
+#   starting too early hits the single-instance lock ("error: noctalia is
+#   already running") and leaves you with no shell at all. Output is
+#   discarded instead of creating stray nohup.out files.
 set -euo pipefail
 
 BIN="$HOME/.local/bin/noctalia"
+LOG="$HOME/.cache/noctalia/noctalia.log"
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
+# Only one restart at a time (manual run racing the niri-lock-watchdog
+# timer): a concurrent run exits quietly, the first one finishes the job.
+exec 9>"$XDG_RUNTIME_DIR/noctalia-restart.lock"
+flock -n 9 || exit 0
+
+# Derive WAYLAND_DISPLAY from the niri IPC socket name
+# (niri.<display>.<pid>.sock) when running outside the graphical session.
+if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    sock=$(ls -t "$XDG_RUNTIME_DIR"/niri.*.sock 2>/dev/null | head -1 || true)
+    if [ -n "$sock" ]; then
+        name=${sock##*/}                    # niri.wayland-1.2543.sock
+        name=${name#niri.}                  # wayland-1.2543.sock
+        name=${name%.sock}                  # wayland-1.2543
+        export WAYLAND_DISPLAY="${name%.*}" # wayland-1
+        echo "WAYLAND_DISPLAY not set; derived '$WAYLAND_DISPLAY' from ${sock##*/}"
+    else
+        echo "warning: no WAYLAND_DISPLAY and no niri socket in $XDG_RUNTIME_DIR" >&2
+    fi
+fi
+
+# True if any local session reports LockedHint=yes (set by niri/noctalia on
+# lock; stays yes while the compositor keeps the session locked).
+session_is_locked() {
+    local sid
+    for sid in $(loginctl list-sessions --no-legend 2>/dev/null | awk '{print $1}'); do
+        if [ "$(loginctl show-session "$sid" -p LockedHint --value 2>/dev/null)" = yes ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+spawn_fallback_lock() {
+    # -C /dev/null: ignore ~/.config/swaylock/config, which contains
+    # options this swaylock build does not support (layout-width).
+    setsid swaylock -C /dev/null -c 1a1a1a </dev/null >/dev/null 2>&1 &
+}
+
+LOCKED=0
+if session_is_locked; then
+    LOCKED=1
+    if pgrep -x noctalia >/dev/null; then
+        echo "session is locked: swaylock will hold the lock across the restart"
+        echo "(type your password once afterwards to unlock)"
+    else
+        echo "session is locked but noctalia is not running (dead-lock state)"
+        echo "spawning swaylock to recover; type your password to unlock"
+    fi
+fi
 
 if pgrep -x noctalia >/dev/null; then
     pkill -x noctalia
@@ -33,12 +93,42 @@ if pgrep -x noctalia >/dev/null; then
     fi
 fi
 
+# With the session locked, the lock now either just died with noctalia or
+# was already dead. A live lock client must take over, or niri keeps the
+# session locked forever (all outputs stay solid dark red).
+if [ "$LOCKED" = 1 ] && ! pgrep -x swaylock >/dev/null; then
+    spawn_fallback_lock
+    sleep 1
+    if pgrep -x swaylock >/dev/null; then
+        echo "swaylock is holding the lock"
+    else
+        echo "ERROR: swaylock fallback failed; session stays locked!" >&2
+        echo "recover manually: WAYLAND_DISPLAY=$WAYLAND_DISPLAY swaylock -C /dev/null" >&2
+        exit 1
+    fi
+fi
+
+log_lines=$(wc -l < "$LOG" 2>/dev/null || echo 0)
+
 setsid nohup "$BIN" >/dev/null 2>&1 &
 sleep 1
 
-if pgrep -x noctalia >/dev/null; then
-    echo "noctalia restarted (pid $(pgrep -x noctalia | head -1))."
-else
-    echo "noctalia failed to start; check ~/.cache/noctalia/noctalia.log" >&2
+if ! pgrep -x noctalia >/dev/null; then
+    echo "noctalia failed to start; check $LOG" >&2
     exit 1
 fi
+
+# An instance that dies (or never logs its startup line) within the first
+# seconds did not really start.
+for _ in $(seq 1 50); do # up to 5s more
+    if ! pgrep -x noctalia >/dev/null; then
+        echo "noctalia died shortly after starting; check $LOG" >&2
+        exit 1
+    fi
+    if tail -n "+$((log_lines + 1))" "$LOG" 2>/dev/null | grep -q '\[app\] noctalia v'; then
+        break
+    fi
+    sleep 0.1
+done
+
+echo "noctalia restarted (pid $(pgrep -x noctalia | head -1))."
