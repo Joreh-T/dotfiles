@@ -319,8 +319,10 @@ spawn-at-startup "/home/joreh/.local/bin/noctalia"
 // in config.kdl environment block and autostart overrides doc).
 spawn-at-startup "fcitx5"
 // wallpaper is handled by Noctalia itself.
-// Auto-display: any external (DP-1/DP-2) connected → built-in eDP-1 off; all disconnected → on.
-spawn-at-startup "/home/joreh/.local/bin/niri-autodisplay.sh"
+// Auto-display: replaced by niri's built-in lid handling (v26.04+, commit
+// cd90dfc7): lid closed + any external connected → eDP off; otherwise on.
+// Event-driven via logind, no polling/EDID sniffing, no leftover output-off
+// override. The old script lives in bin/niri-autodisplay.sh if ever needed.
 spawn-sh-at-startup "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
