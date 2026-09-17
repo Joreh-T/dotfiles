@@ -417,3 +417,81 @@ vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
 --     end,
 -- })
 
+--------------- Snacks.image WezTerm image-drift fix ---------------
+-- Problem: in WezTerm, the image inside a `snacks.image` hover/preview popup
+-- is misaligned with the popup border. With a left sidebar (Outline) or any
+-- left split open, the image drifts right by roughly the sidebar width.
+-- Root cause (two upstream bugs whose row components cancel each other out,
+-- so only the horizontal drift is visible):
+--   1) snacks' WezTerm fallback anchors the image with `nvim_win_get_position()`,
+--      but for the popup (created `relative="cursor"`, then re-configured to
+--      `relative="win"`) that API returns the anchor window offset twice:
+--      column offset = sidebar width (visible drift), row offset = 1 tabline row.
+--   2) snacks writes the CSI row coordinate without the 0->1 based `+1`, which
+--      would anchor the image one row too high; bug 1's row offset hides that.
+-- Fix: don't trust `nvim_win_get_position()` for these floats. Compute the real
+-- drawn position as `anchor window position + cfg.row/col`, replicate nvim's
+-- float-to-screen clamping, and always add the `+1` when writing the row.
+-- Refs: wezterm lacks kitty unicode placeholders (wezterm/wezterm#7924, open),
+-- which is why snacks uses this fallback path here at all.
+-- NOTE on timing: LazyVim sources this file on `LazyFile` (nvim started with
+-- a file/directory) or on `VeryLazy` (dashboard / no file). In the latter case
+-- the VeryLazy event is already being dispatched when this code runs, so
+-- registering another `User VeryLazy` autocmd here would never fire. Since
+-- snacks.nvim is a startup plugin (lazy = false), it is already loadable in
+-- both cases — apply immediately, and only defer via autocmd as a fallback.
+local function apply_snacks_image_drift_fix()
+    local ok, placement = pcall(require, "snacks.image.placement")
+    local okw = pcall(require, "snacks.win")
+    if not (ok and okw) or placement._wezterm_drift_fixed then
+        return
+    end
+    placement._wezterm_drift_fixed = true
+    local terminal = require("snacks.image.terminal")
+    local SnacksWin = require("snacks.win")
+
+    ---@param self snacks.image.Placement
+    ---@param state snacks.image.State
+    placement.render_fallback = function(self, state)
+        for _, win in ipairs(state.wins) do
+            local cfg = vim.api.nvim_win_get_config(win)
+            local row, col
+            if cfg.relative == "win" and cfg.win and vim.api.nvim_win_is_valid(cfg.win) then
+                local ap = vim.api.nvim_win_get_position(cfg.win)
+                row, col = ap[1] + (cfg.row or 0), ap[2] + (cfg.col or 0)
+            else
+                local p = vim.api.nvim_win_get_position(win)
+                row, col = p[1], p[2]
+            end
+            local border = setmetatable({ opts = cfg }, { __index = SnacksWin }):border_size()
+            local w = math.min((cfg.width or state.loc.width or 20) + border.left + border.right, vim.o.columns)
+            local h = math.min((cfg.height or state.loc.height or 10) + border.top + border.bottom, vim.o.lines)
+            col = math.max(0, math.min(col, vim.o.columns - w))
+            row = math.max(0, math.min(row, vim.o.lines - h))
+            -- `set_cursor` takes a 1-based row but a 0-based column (it adds
+            -- +1 for the column itself), hence the asymmetric +1 here.
+            terminal.set_cursor({ row + 1 + border.top, col + border.left })
+            terminal.request({
+                a = "p",
+                i = self.img.id,
+                p = self.id,
+                C = 1,
+                c = state.loc.width,
+                r = state.loc.height,
+            })
+        end
+    end
+end
+
+if package.loaded["snacks"] then
+    apply_snacks_image_drift_fix()
+else
+    vim.api.nvim_create_autocmd("User", {
+        group = newGroup("snacks-image-drift-fix"),
+        pattern = "VeryLazy",
+        once = true,
+        desc = "Patch snacks.image render_fallback so images align with the popup in WezTerm",
+        callback = apply_snacks_image_drift_fix,
+    })
+end
+--------------- End of Snacks.image WezTerm image-drift fix --------------
