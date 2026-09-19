@@ -513,6 +513,9 @@ binds {
     Mod+Ctrl+Comma   { move-column-to-monitor-up; }
     Mod+Ctrl+Period  { move-column-to-monitor-down; }
 
+    // Toggle the internal display (eDP-1) manually.
+    Mod+Shift+E hotkey-overlay-title="Toggle Internal Display" { spawn "toggle-internal-display"; }
+
     // Freed keys restored to niri defaults: pull the right window into the
     // bottom of this column / push the bottom window out into its own column.
     Mod+Comma  { consume-window-into-column; }

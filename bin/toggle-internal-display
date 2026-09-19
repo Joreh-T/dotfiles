@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Toggle the internal display (eDP-1) on/off. Used by niri keybind Mod+Shift+E.
+# niri-ipc: a disabled output has .logical == null.
+set -euo pipefail
+state=$(niri msg --json outputs | jq -r '.[] | select(.name=="eDP-1") | if .logical == null then "off" else "on" end')
+if [[ "$state" == "on" ]]; then
+    niri msg output eDP-1 off
+else
+    niri msg output eDP-1 on
+fi
