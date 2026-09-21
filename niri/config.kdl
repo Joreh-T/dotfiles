@@ -57,6 +57,20 @@ layer-rule {
     }
 }
 
+/*
+  Overview backdrop: noctalia renders a blurred + tinted copy of the current
+  wallpaper on a dedicated layer surface; this rule places it into niri's
+  overview backdrop, so Mod+U overview shows the desktop wallpaper (blurred
+  style) instead of the flat gray. Requires [backdrop] enabled in
+  ~/.config/noctalia/config.toml. Alternative: match "^noctalia-wallpaper"
+  for the unblurred stationary wallpaper (needs layout background-color
+  "transparent" too). Docs: noctalia docs/user/compositor-settings/niri.mdx.
+*/
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
+}
+
 /* You can also fine-tune the blur effect globally. */
 blur {
   passes 2        // more passes = stronger blur (default: 3)
