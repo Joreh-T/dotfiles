@@ -1,6 +1,7 @@
 vim.g.sonokai_style = "atlantis" -- default, atlantis, espresso, maia, andromeda, shusia
 vim.g.sonokai_menu_selection_background = "bg"
 vim.g.sonokai_diagnostic_virtual_text = "grey" -- Available values:   `'grey'`, `'colored'`, `'highlighted'`
+vim.g.sonokai_current_word = "high contrast background" -- LSP reference highlighting (LspReference* → CurrentWord); options include ‘grey background’, ‘bold’, ‘underline’, and ‘italic’.
 
 local enabled_theme = "sonokai" -- "onedark" "one_monokai" "everforest" "nightfox" "kanagawa" "vscode"
 
