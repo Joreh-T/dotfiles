@@ -241,6 +241,9 @@ tint_intensity          = 0.3         # surface-color tint over the lock screen 
 # only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
 # lock screen on DP-1 only).
 monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
+transition          = ["fade", "wipe", "disc", "zoom", "honeycomb"]
+transition_duration = 1500
+edge_smoothness     = 0.3
 
 # ── System Monitor ────────────────────────────────────────────────────────────
 
@@ -285,8 +288,8 @@ effects         = true              # visual weather effects
 enable_overdrive = false            # allow volume above 100% (up to 150%)
 enable_sounds = false               # master toggle for UI feedback sounds
 sound_volume = 0.5                  # 0.0 - 1.0
-volume_change_sound = ""            # empty = bundled sounds/volume-change.wav
-notification_sound = ""             # empty = bundled sounds/notification.wav
+# v5.2.0: volume_change_sound / notification_sound removed in favor of freedesktop sound themes:
+# sound_theme = "freedesktop"        # picker for installed sound themes
 
 # ── Brightness ────────────────────────────────────────────────────────────────
 
@@ -522,6 +525,13 @@ enabled = false
 # type = "screen_recorder"
 # [[control_center.shortcuts]]
 # type = "session"
+
+[shell.window_switcher]
+style          = "carousel"  # "carousel"=v5.2 新的3D深度轮播；"compact"=紧凑方框条（类似旧版）
+mru            = true       # （旧键）按最近使用排序而非工作区布局
+show_caption   = true        # 预览下方显示窗口标题+应用名
+show_count     = true        # 预览上方显示"当前第几个/共几个"
+show_app_icon  = true        # 预览上叠加应用图标
 
 [plugins]
 enabled = [
