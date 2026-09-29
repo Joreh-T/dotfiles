@@ -1321,4 +1321,15 @@ return {
             image_support = false,
         },
     },
+    {
+        "Joreh-T/pardon.nvim",
+        opts = {
+            cli = "pardon",
+            auto_close = true
+        },
+        keys = {
+            { "gq", "<Plug>(PardonLookup)", mode = { "n", "x" }, desc = "Word Query" },
+            { "gt", "<Plug>(PardonTranslate)", mode = { "n", "x" }, desc = "Translate" },
+        },
+    }
 }
