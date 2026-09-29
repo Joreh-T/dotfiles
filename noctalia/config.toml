@@ -227,24 +227,6 @@ lock_keys = true                    # Caps/Num/Scroll Lock changes; disable to s
 keyboard_layout = true              # input keyboard layout changes
 privacy = true                      # microphone/camera/screen-share capture changes
 
-# ── Lock Screen ───────────────────────────────────────────────────────────────
-
-[lockscreen]
-enabled                 = true
-blurred_desktop         = false       # use a desktop snapshot as the lock screen background (requires wlr-screencopy)
-blur_intensity          = 0.5         # lock screen background blur (0.0 = none, 1.0 = maximum)
-tint_intensity          = 0.3         # surface-color tint over the lock screen background
-# wallpaper             = ""          # optional image path for the lock screen; empty uses the desktop wallpaper
-# Verified in source (fork lock_screen.cpp isInteractiveOutput): if NONE of the listed
-# connectors is currently present, the restriction is dropped and the lock screen shows on
-# all outputs — so undocked (eDP-1 only) still gets a visible lock screen. "Others stay black"
-# only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
-# lock screen on DP-1 only).
-monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
-transition          = ["fade", "wipe", "disc", "zoom", "honeycomb"]
-transition_duration = 1500
-edge_smoothness     = 0.3
-
 # ── System Monitor ────────────────────────────────────────────────────────────
 
 [system.monitor]
@@ -492,21 +474,220 @@ enabled = false
 # format = "{:%H:%M}"
 # background_opacity = 0.8
 
-# [lockscreen_widgets]
-# enabled = false
-# widget_order = ["clock_main"]
+# ── Lock Screen ───────────────────────────────────────────────────────────────
 
-# [lockscreen_widgets.widget.clock_main]
-# type     = "clock"
-# output   = "DP-1"
-# cx       = 1600.0
-# cy       = 120.0
-# scale    = 1.5
-# rotation = 0.0
+[lockscreen]
+enabled                 = true
+blurred_desktop         = false       # use a desktop snapshot as the lock screen background (requires wlr-screencopy)
+blur_intensity          = 0.5         # lock screen background blur (0.0 = none, 1.0 = maximum)
+tint_intensity          = 0.3         # surface-color tint over the lock screen background
+# wallpaper             = ""          # optional image path for the lock screen; empty uses the desktop wallpaper
+# Verified in source (fork lock_screen.cpp isInteractiveOutput): if NONE of the listed
+# connectors is currently present, the restriction is dropped and the lock screen shows on
+# all outputs — so undocked (eDP-1 only) still gets a visible lock screen. "Others stay black"
+# only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
+# lock screen on DP-1 only).
+monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
+transition          = ["fade", "wipe", "disc", "zoom", "honeycomb"]
+transition_duration = 1500
+edge_smoothness     = 0.3
 
-# [lockscreen_widgets.widget.clock_main.settings]
-# format = "{:%H:%M}"
-# background_opacity = 0.8
+
+# ── Lockscreen Widgets ────────────────────────────────────────────────────────
+# One custom style (the DP-1 look) replicated on every output: compact login box
+# near the bottom + circle digital clock near the top. Owned entirely by this file
+# (the [lockscreen_widgets] section was removed from the state-dir settings.toml
+# on 2026-09-29 so this file is authoritative); GUI widget edits will write back
+# to settings.toml and win again until re-synced.
+#  - login-box widgets are per-output by design: any output WITHOUT an entry here
+#    gets one auto-created with the stock "regular" style (a brand-new connector
+#    needs adding here to get the custom look).
+#  - widget_order MUST list every widget id — ids missing from it are dropped.
+#  - Entries for disconnected outputs are kept; their widgets stay hidden while
+#    the output is gone and on blackout (non-interactive) lockscreen surfaces.
+#  - Which outputs show an interactive lockscreen at all: [lockscreen] monitors
+#    (currently ["DP-1"]; when no listed connector is present it falls back to
+#    all outputs, which covers the undocked / DP-2-only cases).
+
+[lockscreen_widgets]
+enabled = true
+schema_version = 2
+widget_order = [
+    "lockscreen-login-box@DP-2",
+    "lockscreen-login-box@DP-1",
+    "lockscreen-login-box@eDP-1",
+    "lockscreen-clock-DP-1",
+    "lockscreen-clock-DP-2",
+    "lockscreen-clock-eDP-1"
+]
+
+[lockscreen_widgets.grid]
+cell_size = 16
+major_interval = 4
+visible = true
+
+# DP-1 (2560x1440): the original customized look
+[lockscreen_widgets.widget."lockscreen-login-box@DP-1"]
+type = "login_box"
+output = "DP-1"
+cx = 1280.0
+cy = 1261.0
+box_width = 400.0
+box_height = 70.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget."lockscreen-login-box@DP-1".settings]
+layout = "compact"
+background_color = "surface_variant"
+background_opacity = 0.72
+background_radius = 18.0
+input_opacity = 0.88
+input_radius = 6.0
+center_password_text = false
+show_caps_lock = true
+show_keyboard_layout = true
+show_login_button = true
+show_media = true
+show_session_buttons = true
+show_unlock_hint = false
+show_weather = true
+
+[lockscreen_widgets.widget.lockscreen-clock-DP-1]
+type = "clock"
+output = "DP-1"
+cx = 1280.0
+cy = 400.0
+box_width = 480.0
+box_height = 192.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-clock-DP-1.settings]
+clock_style = "digital"
+format = "{:%H:%M}"
+font_family = "Maple Mono CN"
+timezone = ""
+circle = true
+center_text = true
+color = "on_surface"
+background = true
+background_color = "surface"
+background_opacity = 0.0
+background_padding = 10
+background_radius = 12
+shadow = true
+
+# DP-2 (2560x1440): same style, same proportional position
+[lockscreen_widgets.widget."lockscreen-login-box@DP-2"]
+type = "login_box"
+output = "DP-2"
+cx = 1280.0
+cy = 1261.0
+box_width = 400.0
+box_height = 70.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget."lockscreen-login-box@DP-2".settings]
+layout = "compact"
+background_color = "surface_variant"
+background_opacity = 0.72
+background_radius = 18.0
+input_opacity = 0.88
+input_radius = 6.0
+center_password_text = false
+show_caps_lock = true
+show_keyboard_layout = true
+show_login_button = true
+show_media = true
+show_session_buttons = true
+show_unlock_hint = false
+show_weather = true
+
+[lockscreen_widgets.widget.lockscreen-clock-DP-2]
+type = "clock"
+output = "DP-2"
+cx = 1280.0
+cy = 400.0
+box_width = 480.0
+box_height = 192.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-clock-DP-2.settings]
+clock_style = "digital"
+format = "{:%H:%M}"
+font_family = "Maple Mono CN"
+timezone = ""
+circle = true
+center_text = true
+color = "on_surface"
+background = true
+background_color = "surface"
+background_opacity = 0.0
+background_padding = 10
+background_radius = 12
+shadow = true
+
+# eDP-1 (1646x1029 logical @1.75): same style, positions scaled
+[lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+type = "login_box"
+output = "eDP-1"
+cx = 823.0
+cy = 901.0
+box_width = 400.0
+box_height = 70.0
+rotation = 0.0
+placement_width = 1646.0
+placement_height = 1029.0
+
+[lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+layout = "compact"
+background_color = "surface_variant"
+background_opacity = 0.72
+background_radius = 18.0
+input_opacity = 0.88
+input_radius = 6.0
+center_password_text = false
+show_caps_lock = true
+show_keyboard_layout = true
+show_login_button = true
+show_media = true
+show_session_buttons = true
+show_unlock_hint = false
+show_weather = true
+
+[lockscreen_widgets.widget.lockscreen-clock-eDP-1]
+type = "clock"
+output = "eDP-1"
+cx = 823.0
+cy = 286.0
+box_width = 480.0
+box_height = 192.0
+rotation = 0.0
+placement_width = 1646.0
+placement_height = 1029.0
+
+[lockscreen_widgets.widget.lockscreen-clock-eDP-1.settings]
+clock_style = "digital"
+format = "{:%H:%M}"
+font_family = "Maple Mono CN"
+timezone = ""
+circle = true
+center_text = true
+color = "on_surface"
+background = true
+background_color = "surface"
+background_opacity = 0.0
+background_padding = 10
+background_radius = 12
+shadow = true
+
 
 # ── Control Center ────────────────────────────────────────────────────────────
 
