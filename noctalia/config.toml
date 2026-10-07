@@ -43,6 +43,7 @@ clipboard_image_action_command = ""  # image preview action: gimp {path}, or sat
 # IPC example:
 # noctalia msg clipboard-clear
 shared_gl_context     = true         # startup-only; false isolates GPU contexts for broken drivers
+# readline_shortcuts   = true         # emacs-style line editing (Ctrl+A/E/B/F/K/W, Alt+B/F/D...) in every text field
 # lang                = "en"
 # avatar_path         = "~/Pictures/avatar.png"
 
@@ -188,6 +189,7 @@ scale              = 1.0            # notification size multiplier applied on to
 background_opacity = 0.97
 offset_x           = 20             # absolute horizontal margin from the screen edge
 offset_y           = 8              # absolute vertical margin from the screen edge
+follow_focused_output = true       # show toasts on the focused monitor (overrides monitors)
 # [notification.filter.rhythmbox]
 # enabled         = true
 # match           = "rhythmbox"
@@ -210,6 +212,7 @@ scale = 1.0                         # OSD size multiplier applied on top of acce
 background_opacity = 0.97           # background opacity of OSD popups
 offset_x = 20                       # absolute horizontal margin from the screen edge
 offset_y = 8                        # absolute vertical margin from the screen edge
+follow_focused_output = true       # show OSD on the focused monitor (overrides monitors)
 # monitors = ["DP-1"]               # connector names; omit or leave empty for all monitors
 
 [osd.kinds]
