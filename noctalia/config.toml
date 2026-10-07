@@ -782,6 +782,12 @@ show_label     = false
 vpn_status     = "replace"         # replace | both | hidden
 # show_vpn_label = false             # replace: replaces network label; both: adds VPN label
 
+[widget.control-center]
+# Three ways to restyle the bar button (defaults: glyph "noctalia" = built-in logo):
+# custom_image = "~/Pictures/cc-icon.png" # any PNG/SVG replaces the glyph entirely (~ expanded)
+# custom_image_colorize = true            # tint the custom image with the widget icon color
+glyph = "category-2"                     # or keep a built-in glyph: Tabler icon name or U+Fxxx codepoint
+
 # [widget.volume.effects_profile_glyphs]
 # eq_desktop = "device-speaker"
 
