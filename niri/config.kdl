@@ -270,6 +270,22 @@ layout {
         // inactive-gradient from="#505050" to="#808080" angle=45 relative-to="workspace-view"
     }
 
+    // Tab indicator: the segmented bar alongside a tabbed column (Mod+W).
+    // One segment per tab, active segment highlighted; renders only in tabbed
+    // display mode, and hides itself when a single tab remains.
+    tab-indicator {
+        place-within-column    // draw inside the column edge instead of the outer gap
+        position "left"
+        width 4
+        gap 5
+        corner-radius 2
+        gaps-between-tabs 2
+        hide-when-single-tab
+        // active-gradient from="#cba6f7" to="#89b4fa" angle=45
+        // inactive-color "#585b70"
+        // urgent-color "#f38ba8"
+    }
+
     // You can enable drop shadows for windows.
     shadow {
         // Uncomment the next line to enable shadows.
