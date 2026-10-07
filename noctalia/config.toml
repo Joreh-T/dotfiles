@@ -488,7 +488,7 @@ tint_intensity          = 0.3         # surface-color tint over the lock screen 
 # only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
 # lock screen on DP-1 only).
 monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
-transition          = ["fade", "wipe", "disc", "zoom", "honeycomb"]
+transition          = ["fade", "wipe", "disc", "zoom"]
 transition_duration = 1500
 edge_smoothness     = 0.3
 
