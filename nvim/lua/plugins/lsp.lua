@@ -21,6 +21,25 @@ return {
             }
             opts.servers.clangd = {
                 cmd = vim.list_extend({ "clangd" }, clangd_flags),
+                -- clangd is occasionally OOM-killed (SIGKILL, signal=9). nvim 0.12
+                -- deletes the dead client object, so ":lsp restart" then fails with
+                -- "No active clients". Re-enabling the config replays FileType on
+                -- all buffers, spawning a fresh clangd (same detected binary via
+                -- vim.lsp.config) and re-attaching every C/C++ buffer at once.
+                -- Normal exits (graceful shutdown code=0/signal=0, forced stop
+                -- signal=15) are skipped so ":lsp stop"/":lsp restart" still work.
+                on_exit = function(code, signal)
+                    if code == 0 and (signal == 0 or signal == 15) then
+                        return
+                    end
+                    vim.schedule(function()
+                        vim.notify(
+                            ("clangd exited abnormally (code=%d signal=%d), restarting"):format(code, signal),
+                            vim.log.levels.WARN
+                        )
+                        vim.lsp.enable("clangd")
+                    end)
+                end,
             }
             -- One-shot binary detection: pick the clangd binary from the FIRST C/C++
             -- project file opened in the session (reads <root>/.nvim-clangd), register it,
