@@ -21,10 +21,11 @@
   login loop; see pitfall 1 in `greetd-greeter.md`)
 - Full deployment record for greeter/greetd: `greetd-greeter.md`
 
-- `~/.local/bin/niri-autodisplay.sh` (autostarted by niri) — udev hotplug listener:
-  if any external monitor (DP-1/DP-2) is connected → `niri msg output eDP-1 off`;
-  all disconnected → `on`. Added so the laptop panel automatically turns off when
-  docked to an external monitor.
+- RETIRED (2026-10-25): `niri-autodisplay.sh` polling listener — any external
+  monitor connected → `niri msg output eDP-1 off`; all disconnected → `on`.
+  Superseded by niri's built-in lid handling (v26.04+) plus niri-display-manager
+  profiles (`bin/niri-display-manager`); the script was removed from `bin/`.
+  Historical notes kept below.
 
   FIXED (2026-08-14): switched to POLLING `/sys/class/drm/*/status` every 2s.
   Root causes: (1) `udevadm monitor | while read` is block-buffered — hotplug
