@@ -14,7 +14,6 @@ declare -A LINKS=(
     ["$DOTFILES_DIR/zsh/.zshenv"]="$HOME/.zshenv"
     ["$DOTFILES_DIR/niri"]="$HOME/.config/niri"
     ["$DOTFILES_DIR/noctalia"]="$HOME/.config/noctalia"
-    ["$DOTFILES_DIR/bin/niri-autodisplay.sh"]="$HOME/.local/bin/niri-autodisplay.sh"
     ["$DOTFILES_DIR/bin/noctalia-greeter-switch"]="$HOME/.local/bin/noctalia-greeter-switch"
     ["$DOTFILES_DIR/bin/greeter-wallpaper-follow"]="$HOME/.local/bin/greeter-wallpaper-follow"
     ["$DOTFILES_DIR/bin/noctalia-restart"]="$HOME/.local/bin/noctalia-restart"

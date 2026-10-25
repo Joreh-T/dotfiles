@@ -365,7 +365,8 @@ spawn-at-startup "fcitx5"
 // Auto-display: replaced by niri's built-in lid handling (v26.04+, commit
 // cd90dfc7): lid closed + any external connected → eDP off; otherwise on.
 // Event-driven via logind, no polling/EDID sniffing, no leftover output-off
-// override. The old script lives in bin/niri-autodisplay.sh if ever needed.
+// override. The old polling script was removed from bin/ (2026-10-25);
+// docked on/off switching is now also covered by niri-display-manager profiles.
 spawn-sh-at-startup "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
 // pardon: The daemon starts automatically (it is invisible); both the tray icon and shortcut commands, as well as notifications, rely on it to function properly.
 spawn-sh-at-startup "pardon daemon start"
