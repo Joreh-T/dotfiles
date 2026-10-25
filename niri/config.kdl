@@ -147,27 +147,32 @@ input {
 
 // --- Outputs: 3 monitors (eDP-1 builtin HiDPI, DP-1/DP-2 external 1440p) ---
 output "eDP-1" {
+    off
+    mode "2880x1800@60.000"
+    scale 1
+    position x=0 y=0
     // 2880x1800 builtin panel, scaled to 1.75 for comfortable text size.
     // mode "2880x1800@60"
-    scale 1.75
     // Center-align with the 1440p external (y = (1440 - 1028) / 2 ≈ 206)
     // instead of niri's default top-align. niri only lets the cursor cross
     // between outputs where their edges actually overlap; centering shrinks
     // the dead zones to 206px at the top AND bottom of the external's left
     // edge (top-align left a 412px dead zone at the bottom). Bottom-align
     // would be y = 1440 - 1028 ≈ 412.
-    position x=0 y=206
 }
 output "DP-1" {
-    // 2560x1440 external via full-feature USB-C.
+    mode "2560x1440@60.000"
     scale 1
+    position x=1646 y=0
+    // 2560x1440 external via full-feature USB-C.
     // Set explicitly (eDP-1 logical width 1645.71 → x=1646) so the two
     // outputs stay adjacent when eDP-1 carries an explicit position.
-    position x=1646 y=0
 }
 output "DP-2" {
-    // 2560x1440 external via USB dock's HDMI.
+    mode "2560x1440@59.951"
     scale 1
+    position x=4206 y=0
+    // 2560x1440 external via USB dock's HDMI.
 }
 
 // Settings that influence how windows are positioned and sized.

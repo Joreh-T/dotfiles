@@ -1,0 +1,21 @@
+{
+  "name": "eDP1Only",
+  "version": 2,
+  "connector_key": [
+    "Lenovo Group Limited:0x8A90"
+  ],
+  "outputs": {
+    "eDP-1": {
+      "enabled": true,
+      "mode": "2880x1800@60.000",
+      "scale": 1.75,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "display_type": "extend"
+    }
+  }
+}

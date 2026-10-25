@@ -1,0 +1,47 @@
+{
+  "name": "DP1and2On",
+  "version": 2,
+  "connector_key": [
+    "Lenovo Group Limited:0x8A90",
+    "PNP(AOC):Q27G2S:0x00000E5F",
+    "SKYDATA S.P.A.:F27B40Q:0000000000"
+  ],
+  "outputs": {
+    "DP-2": {
+      "enabled": true,
+      "mode": "2560x1440@59.951",
+      "scale": 1.0,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 4206,
+        "y": 0
+      },
+      "display_type": "extend"
+    },
+    "DP-1": {
+      "enabled": true,
+      "mode": "2560x1440@60.000",
+      "scale": 1.0,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 1646,
+        "y": 0
+      },
+      "display_type": "extend"
+    },
+    "eDP-1": {
+      "enabled": false,
+      "mode": "2880x1800@60.000",
+      "scale": 1.0,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "display_type": "extend"
+    }
+  }
+}
