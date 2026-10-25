@@ -65,11 +65,17 @@ def main() -> int:
 
     changed = 0
     section = ""
+    known: set[str] = set()
+    has_path: set[str] = set()
+    header_idx: dict[str, int] = {}
+    inserts: list[tuple[int, str]] = []  # (position in out, line) for missing path lines
     out = []
     for line in lines:
         stripped = line.strip()
         if stripped.startswith("[") and stripped.endswith("]"):
             section = stripped[1:-1]
+            known.add(section)
+            header_idx[section] = len(out)
             out.append(line)
             continue
         m = PATH_RE.match(line)
@@ -82,11 +88,33 @@ def main() -> int:
                 and (not connector or section.rsplit(".", 1)[-1] == connector)
             )
             if hits_global or hits_output:
+                has_path.add(section)
                 new_line = m.group(1) + target + m.group(2) + line[m.end():]
                 if new_line != line:
                     line = new_line
                     changed += 1
         out.append(line)
+
+    # Self-heal: the greeter rewrites sync.toml on its own (e.g. remembering
+    # the last session) and drops the wallpaper sections it doesn't manage.
+    # Recreate them so rotation keeps following after such a rewrite; without
+    # this the hook silently no-ops forever (observed 2026-09-14).
+    targets = ["appearance.wallpaper"]
+    if connector:
+        targets.append(f"appearance.wallpapers.{connector}")
+    for sect in targets:
+        if sect in has_path:
+            continue
+        if sect in known:
+            inserts.append((header_idx[sect] + 1, f'path = "{target}"\n'))
+        else:
+            if out and not out[-1].endswith("\n"):
+                out.append("\n")
+            out.append(f"\n[{sect}]\n")
+            out.append(f'path = "{target}"\n')
+        changed += 1
+    for pos, newline in sorted(inserts, reverse=True):
+        out.insert(pos, newline)
 
     if changed == 0:
         return 0  # already pointing there; nothing to write
