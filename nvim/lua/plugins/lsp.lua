@@ -13,7 +13,7 @@ return {
             local clangd_flags = {
                 "--background-index",
                 "--clang-tidy",
-                "--header-insertion=iwyu",
+                "--header-insertion=never",
                 "--completion-style=detailed",
                 "--function-arg-placeholders=true",
                 "--fallback-style=llvm",
