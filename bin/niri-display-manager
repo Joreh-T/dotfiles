@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Display layout GUI for niri: drag monitors on a canvas, persists output
+# blocks into config.kdl, supports named profiles + hotplug auto-apply.
+# Upstream: https://github.com/rickycbanks/niri_display_manager
+# Source checkout + uv venv live in ~/.local/share/niri-display-manager
+# (update with: git -C ~/.local/share/niri-display-manager pull && uv sync --project ~/.local/share/niri-display-manager)
+exec uv run --project "$HOME/.local/share/niri-display-manager" niri-display-manager "$@"

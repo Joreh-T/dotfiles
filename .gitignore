@@ -1,4 +1,7 @@
 .last_update
 
+# niri_display_manager writes a fresh backup before each config save
+niri/config.kdl.bak
+
 # pi coding-agent session task outputs
 .pi/
