@@ -1,0 +1,34 @@
+{
+  "name": "DP1-Redmi",
+  "version": 2,
+  "connector_key": [
+    "Lenovo Group Limited:0x8A90",
+    "PNP(XMI):Redmi 27 NQ:33231Z0083678"
+  ],
+  "outputs": {
+    "DP-1": {
+      "enabled": true,
+      "mode": "2560x1440@60.000",
+      "scale": 1.0,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 1646,
+        "y": 0
+      },
+      "display_type": "extend"
+    },
+    "eDP-1": {
+      "enabled": true,
+      "mode": "2880x1800@60.000",
+      "scale": 1.75,
+      "transform": "Normal",
+      "vrr": false,
+      "position": {
+        "x": 0,
+        "y": 206
+      },
+      "display_type": "extend"
+    }
+  }
+}
