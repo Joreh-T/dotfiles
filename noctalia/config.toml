@@ -543,7 +543,7 @@ placement_height = 1440.0
 
 [lockscreen_widgets.widget."lockscreen-login-box@DP-1".settings]
 layout = "compact"
-background_color = "surface_variant"
+background_color = "surface_container"
 background_opacity = 0.72
 background_radius = 18.0
 input_opacity = 0.88
@@ -597,7 +597,7 @@ placement_height = 1440.0
 
 [lockscreen_widgets.widget."lockscreen-login-box@DP-2".settings]
 layout = "compact"
-background_color = "surface_variant"
+background_color = "surface_container"
 background_opacity = 0.72
 background_radius = 18.0
 input_opacity = 0.88
@@ -651,7 +651,7 @@ placement_height = 1029.0
 
 [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
 layout = "compact"
-background_color = "surface_variant"
+background_color = "surface_container"
 background_opacity = 0.72
 background_radius = 18.0
 input_opacity = 0.88
