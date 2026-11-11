@@ -248,7 +248,7 @@ config.show_new_tab_button_in_tab_bar = true
 config.show_tab_index_in_tab_bar = true
 config.status_update_interval = 1000
 config.tab_bar_at_bottom = false
-config.tab_max_width = 30
+config.tab_max_width = 40
 config.use_fancy_tab_bar = false
 
 --------------------------------- Graphics ---------------------------------
