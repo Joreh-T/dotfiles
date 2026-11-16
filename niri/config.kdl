@@ -147,10 +147,9 @@ input {
 
 // --- Outputs: 3 monitors (eDP-1 builtin HiDPI, DP-1/DP-2 external 1440p) ---
 output "eDP-1" {
-    off
     mode "2880x1800@60.000"
-    scale 1
-    position x=0 y=0
+    scale 1.75
+    position x=0 y=206
     // 2880x1800 builtin panel, scaled to 1.75 for comfortable text size.
     // mode "2880x1800@60"
     // Center-align with the 1440p external (y = (1440 - 1028) / 2 ≈ 206)
