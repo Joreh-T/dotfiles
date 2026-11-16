@@ -19,25 +19,84 @@ return {
                 "--fallback-style=llvm",
                 "--query-driver=**",
             }
+            local clangd_root_markers = {
+                ".nvim-clangd",
+                "compile_commands.json",
+                "compile_flags.txt",
+                ".clangd",
+                ".git",
+            }
+            local clangd_filetypes = { "c", "cpp", "objc", "objcpp", "cuda" }
+            -- At most one auto-restart per minute: under sustained memory pressure
+            -- clangd gets OOM-killed in a loop, and blindly respawning feeds it.
+            local last_abnormal_restart = 0
             opts.servers.clangd = {
                 cmd = vim.list_extend({ "clangd" }, clangd_flags),
-                -- clangd is occasionally OOM-killed (SIGKILL, signal=9). nvim 0.12
-                -- deletes the dead client object, so ":lsp restart" then fails with
-                -- "No active clients". Re-enabling the config replays FileType on
-                -- all buffers, spawning a fresh clangd (same detected binary via
-                -- vim.lsp.config) and re-attaching every C/C++ buffer at once.
+                -- clangd is occasionally OOM-killed (SIGKILL, signal=9). Auto-revive
+                -- ONLY the root that died: re-fire FileType on that root's buffers so
+                -- nvim's native enable logic respawns exactly one clangd (same
+                -- registered binary via vim.lsp.config) and re-attaches them.
+                -- (The previous fix called vim.lsp.enable("clangd"), which replays
+                -- FileType on EVERY buffer -- one OOM death bred one client per root:
+                -- SDK tree, subdirs, even rootless; LSP instances multiplied.)
                 -- Normal exits (graceful shutdown code=0/signal=0, forced stop
                 -- signal=15) are skipped so ":lsp stop"/":lsp restart" still work.
-                on_exit = function(code, signal)
+                on_exit = function(code, signal, client_id)
                     if code == 0 and (signal == 0 or signal == 15) then
                         return
                     end
+                    -- Capture the dead client's root synchronously: deregistration
+                    -- happens in a doubly-scheduled callback, so the object is still
+                    -- readable here but NOT inside the vim.schedule below.
+                    local dead = vim.lsp.get_client_by_id(client_id)
+                    local root = dead and dead.root_dir or nil
+
                     vim.schedule(function()
+                        if os.time() - last_abnormal_restart < 60 then
+                            vim.notify(
+                                ("clangd exited abnormally (code=%d signal=%d); not restarting (another restart <60s ago)"):format(
+                                    code,
+                                    signal
+                                ),
+                                vim.log.levels.WARN
+                            )
+                            return
+                        end
+                        if not root then
+                            -- Rootless clients are pathological restart leftovers;
+                            -- never revive them.
+                            vim.notify(
+                                ("clangd exited abnormally (code=%d signal=%d), no root; not restarting"):format(
+                                    code,
+                                    signal
+                                ),
+                                vim.log.levels.WARN
+                            )
+                            return
+                        end
+                        last_abnormal_restart = os.time()
+
+                        -- Re-fire FileType only for buffers of the dead root. The
+                        -- first one spawns the replacement (lsp.start registers the
+                        -- new client synchronously, so the rest reuse it -- no
+                        -- duplicate-spawn race); other roots are untouched.
+                        for _, b in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+                            local buf = b.bufnr
+                            if
+                                vim.tbl_contains(clangd_filetypes, vim.bo[buf].filetype)
+                                and vim.fs.root(buf, clangd_root_markers) == root
+                            then
+                                vim.api.nvim_exec_autocmds("FileType", { buffer = buf, modeline = false })
+                            end
+                        end
                         vim.notify(
-                            ("clangd exited abnormally (code=%d signal=%d), restarting"):format(code, signal),
+                            ("clangd exited abnormally (code=%d signal=%d); restarted for %s"):format(
+                                code,
+                                signal,
+                                root
+                            ),
                             vim.log.levels.WARN
                         )
-                        vim.lsp.enable("clangd")
                     end)
                 end,
             }
@@ -59,13 +118,7 @@ return {
                             -- Only commit once we're in a real project (has a root marker),
                             -- otherwise stay armed for the next file.
                             -- vim.notify("clangd: detecting binary for project root...", vim.log.levels.INFO)
-                            local root = vim.fs.root(args.buf, {
-                                ".nvim-clangd",
-                                "compile_commands.json",
-                                "compile_flags.txt",
-                                ".clangd",
-                                ".git",
-                            })
+                            local root = vim.fs.root(args.buf, clangd_root_markers)
                             if not root then
                                 return
                             end
@@ -76,13 +129,7 @@ return {
                             -- as a root, then let nvim attach this and all future C buffers.
                             vim.lsp.config(server, {
                                 cmd = vim.list_extend({ bin }, clangd_flags),
-                                root_markers = {
-                                    ".nvim-clangd",
-                                    "compile_commands.json",
-                                    "compile_flags.txt",
-                                    ".clangd",
-                                    ".git",
-                                },
+                                root_markers = clangd_root_markers,
                             })
                             vim.lsp.enable(server)
                         end,
