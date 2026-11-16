@@ -743,8 +743,9 @@ enabled = [
 # rule) replaces the zero-priv path-rewrite scheme 2026-11-16. It does NOT run
 # automatically: re-run it on every wallpaper change so the greeter follows rotation.
 wallpaper_changed = "noctalia msg greeter-sync"
-# (Retired: greeter-wallpaper-follow / greeter-wallpaper-reconcile scripts stay in
-# dotfiles/bin for reference; sync.toml is now root-owned by the official helper.)
+# Kept as redundancy: if the Settings GUI ever drops [shell.greeter_sync]
+# again (it did once), this hook still syncs greeter on wallpaper rotation.
+# Old zero-priv scripts removed from bin/ 2026-11-16; history: e0f6478, 3051ba8.
 # Native auto_sync (wallpaper/font) doesn't fire on palette/mode changes
 # (verified 2026-11-16): close the gap so theme switches reach the greeter too.
 colors_changed = "noctalia msg greeter-sync"
