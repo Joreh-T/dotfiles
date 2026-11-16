@@ -731,7 +731,12 @@ enabled = [
 [hooks]
 
 # started           = "notify-send 'Noctalia' 'Shell started'"
-wallpaper_changed = ["/home/joreh/.local/bin/greeter-wallpaper-follow"] # make greeter follow wallpaper rotation (path-pointer, zero privilege)
+# Official greeter appearance sync (helper at /usr/local/bin + passwordless polkit
+# rule) replaces the zero-priv path-rewrite scheme 2026-11-16. It does NOT run
+# automatically: re-run it on every wallpaper change so the greeter follows rotation.
+wallpaper_changed = "noctalia msg greeter-sync"
+# (Retired: greeter-wallpaper-follow / greeter-wallpaper-reconcile scripts stay in
+# dotfiles/bin for reference; sync.toml is now root-owned by the official helper.)
 # colors_changed    = []
 # theme_mode_changed = "notify-send 'Noctalia' \"Theme mode: $NOCTALIA_THEME_MODE\""
 # session_locked    = []
