@@ -145,6 +145,13 @@ recursive                  = true    # include subdirectories when picking rando
 
 # ── Theme ─────────────────────────────────────────────────────────────────────
 
+# Official appearance sync: shell syncs the greeter natively on wallpaper/font
+# changes (1s debounce). NOTE: the Settings GUI regenerates config.toml when
+# lockscreen settings change and DROPS unknown hand-added sections (lost once
+# 2026-11-16) — re-add this section if greeter auto-sync stops working.
+[shell.greeter_sync]
+auto_sync = true
+
 [theme]
 mode   = "dark"                     # dark | light | auto
 source = "community"                  # builtin | wallpaper | community
@@ -482,7 +489,7 @@ enabled = false
 [lockscreen]
 enabled                 = true
 blurred_desktop         = false       # use a desktop snapshot as the lock screen background (requires wlr-screencopy)
-blur_intensity          = 0.5         # lock screen background blur (0.0 = none, 1.0 = maximum)
+blur_intensity          = 0.3         # lock screen background blur (0.0 = none, 1.0 = maximum)
 tint_intensity          = 0.3         # surface-color tint over the lock screen background
 # wallpaper             = ""          # optional image path for the lock screen; empty uses the desktop wallpaper
 # Verified in source (fork lock_screen.cpp isInteractiveOutput): if NONE of the listed
@@ -491,8 +498,9 @@ tint_intensity          = 0.3         # surface-color tint over the lock screen 
 # only applies when at least one listed connector is connected (e.g. Redmi + eDP-1 dual:
 # lock screen on DP-1 only).
 monitors              = ["DP-1"]    # connectors that show the lock screen; empty shows all monitors, others stay black
-transition          = ["fade", "wipe", "disc", "zoom"]
-transition_duration = 1500
+# transition          = ["fade", "wipe", "disc", "zoom", "crt"]
+transition          = ["fade"]
+transition_duration = 1000
 edge_smoothness     = 0.3
 
 
@@ -737,8 +745,10 @@ enabled = [
 wallpaper_changed = "noctalia msg greeter-sync"
 # (Retired: greeter-wallpaper-follow / greeter-wallpaper-reconcile scripts stay in
 # dotfiles/bin for reference; sync.toml is now root-owned by the official helper.)
-# colors_changed    = []
-# theme_mode_changed = "notify-send 'Noctalia' \"Theme mode: $NOCTALIA_THEME_MODE\""
+# Native auto_sync (wallpaper/font) doesn't fire on palette/mode changes
+# (verified 2026-11-16): close the gap so theme switches reach the greeter too.
+colors_changed = "noctalia msg greeter-sync"
+theme_mode_changed = "noctalia msg greeter-sync"
 # session_locked    = []
 # session_unlocked  = []
 # logging_out       = []
