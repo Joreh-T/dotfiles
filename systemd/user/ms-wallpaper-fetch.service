@@ -1,0 +1,8 @@
+[Unit]
+Description=Fetch Bing & Windows Spotlight wallpapers into ~/Pictures/Wallpapers
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/ms-wallpaper-fetch
+# Pure HTTP + filesystem: no session/compositor dependency, so it also works
+# when the timer fires before the shell is up.

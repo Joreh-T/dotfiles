@@ -1,0 +1,226 @@
+#!/usr/bin/env python3
+"""Fetch Microsoft-sourced wallpapers into Noctalia's wallpaper directory.
+
+Sources (both verified reachable from CN networks, 2026-09-03):
+
+  Windows Spotlight (Windows 11 desktop spotlight feed, 3840x2160):
+    https://fd.api.iris.microsoft.com/v4/api/selection
+        ?placement=88000820&bcnt=4&country=CN&locale=zh-CN&fmt=json
+    - Needs a browser-ish User-Agent, otherwise the endpoint answers
+      "No ad available" (documented in ORelio/Spotlight-Downloader).
+    - Response is double-encoded: batchrsp.items[].item holds a JSON
+      *string*; the inner document's ad.landscapeImage.asset is the
+      direct image URL (Microsoft hosts them on a onecdn.static.microsoft
+      host). ad.title gives a human-readable (localized) caption.
+
+  Bing image of the day (UHD when available, else 1920x1080):
+    https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=zh-CN
+    - Each entry exposes urlbase; append _UHD.jpg (fallback _1920x1080.jpg)
+      and prefix https://www.bing.com.
+
+Files land in <root>/{Spotlight,Bing}/ with title-based names, deduped by
+filename. Picking the wallpaper is deliberately NOT this script's job:
+wallpaper-rotate.timer (wallpaper-next) rotates the whole tree, and the
+picker/greeter follow along.
+
+Env overrides:
+  MS_WALLPAPER_DIR    destination root   (default ~/Pictures/Wallpapers)
+  MS_WALLPAPER_MAX_KEEP  per-source cap, oldest deleted; 0 = unlimited (default 300)
+
+Exit status: 0 unless every source failed.
+"""
+
+import json
+import os
+import pathlib
+import re
+import sys
+import time
+import urllib.request
+from datetime import datetime
+
+ROOT = pathlib.Path(
+    os.environ.get("MS_WALLPAPER_DIR", "~/Pictures/Wallpapers")
+).expanduser()
+MAX_KEEP = int(os.environ.get("MS_WALLPAPER_MAX_KEEP", "300"))
+TIMEOUT = 30
+RETRIES = 2
+UA = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
+
+SPOTLIGHT_URL = (
+    "https://fd.api.iris.microsoft.com/v4/api/selection"
+    "?placement=88000820&bcnt=4&country=CN&locale=zh-CN&fmt=json"
+)
+BING_URL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=zh-CN"
+
+
+def http_get(url: str) -> bytes:
+    last_err = None
+    for _ in range(RETRIES):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                return resp.read()
+        except Exception as e:  # noqa: BLE001 - log and retry
+            last_err = e
+            time.sleep(2)
+    raise RuntimeError(f"GET {url}: {last_err}")
+
+
+def sanitize(text: str) -> str:
+    """Filesystem-friendly name: keep unicode word chars, collapse spaces."""
+    text = re.sub(r"[^\w\s-]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip(" -_")
+    return text[:60].rstrip(" -_")
+
+
+def download(url: str, dest: pathlib.Path, min_bytes: int = 30_000) -> bool:
+    """Download to a .part temp file, sanity-check JPEG magic, move into place."""
+    tmp = dest.with_suffix(dest.suffix + ".part")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp, open(tmp, "wb") as f:
+            while True:
+                chunk = resp.read(1 << 16)
+                if not chunk:
+                    break
+                f.write(chunk)
+        size = tmp.stat().st_size
+        with open(tmp, "rb") as f:
+            head = f.read(2)
+        if size < min_bytes or head != b"\xff\xd8":
+            raise RuntimeError(f"not a JPEG or too small ({size} bytes)")
+        tmp.rename(dest)
+        return True
+    except Exception as e:  # noqa: BLE001
+        print(f"    download failed: {e}", file=sys.stderr)
+        tmp.unlink(missing_ok=True)
+        return False
+
+
+def set_mtime_to_image_date(dest: pathlib.Path, date: str) -> None:
+    """Bing files are date-prefixed; align mtime with the image's real date so
+    newest-first rotation (and retention) follow content age, not batch order."""
+    try:
+        epoch = datetime.strptime(date, "%Y-%m-%d").timestamp()
+        os.utime(dest, (epoch, epoch))
+    except ValueError:
+        pass
+
+
+def fetch_bing(out: pathlib.Path) -> tuple[int, int]:
+    data = json.loads(http_get(BING_URL))
+    new, skipped, failed = 0, 0, 0
+    for img in data.get("images", []):
+        urlbase = img.get("urlbase", "")
+        title = sanitize(img.get("title", ""))
+        date = img.get("startdate", "")  # YYYYMMDD
+        date = f"{date[:4]}-{date[4:6]}-{date[6:8]}" if len(date) == 8 else "unknown"
+        name = sanitize(f"{date} {title}") or f"bing-{date}"
+        dest = out / f"{name}.jpg"
+        if dest.exists():
+            skipped += 1
+            continue
+        url = f"https://www.bing.com{urlbase}_UHD.jpg"
+        fallback = f"https://www.bing.com{urlbase}_1920x1080.jpg"
+        if download(url, dest) or (url != fallback and download(fallback, dest)):
+            set_mtime_to_image_date(dest, date)
+            new += 1
+            print(f"  [bing] {dest.name} ({dest.stat().st_size >> 10} KiB)")
+        else:
+            failed += 1
+    return new, skipped + failed
+
+
+def fetch_spotlight(out: pathlib.Path) -> tuple[int, int]:
+    data = json.loads(http_get(SPOTLIGHT_URL))
+    items = data.get("batchrsp", {}).get("items", [])
+    new, skipped, failed = 0, 0, 0
+    for wrapper in items:
+        try:
+            inner = json.loads(wrapper["item"])  # double-encoded payload
+        except (KeyError, json.JSONDecodeError) as e:
+            print(f"    skipping malformed spotlight item: {e}", file=sys.stderr)
+            failed += 1
+            continue
+        ad = inner.get("ad", {})
+        asset = ad.get("landscapeImage", {}).get("asset", "")
+        if not asset:
+            continue
+        name = sanitize(ad.get("title", "")) or sanitize(asset.rsplit("/", 1)[-1])
+        dest = out / f"{name}.jpg"
+        if dest.exists():
+            skipped += 1
+            continue
+        if download(asset, dest):
+            new += 1
+            print(f"  [spotlight] {dest.name} ({dest.stat().st_size >> 10} KiB)")
+        else:
+            failed += 1
+    return new, skipped + failed
+
+
+def enforce_retention(out: pathlib.Path) -> int:
+    if MAX_KEEP <= 0:
+        return 0
+    files = sorted(out.glob("*.jpg"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for stale in files[MAX_KEEP:]:
+        stale.unlink(missing_ok=True)
+        print(f"  [retention] removed {stale.name}")
+    return max(0, len(files) - MAX_KEEP)
+
+
+def notify(new_bing: int, new_spot: int) -> None:
+    if new_bing + new_spot == 0:
+        return
+    try:
+        import subprocess
+
+        subprocess.run(
+            [
+                "notify-send",
+                "壁纸已更新",
+                f"Bing +{new_bing}，聚焦 +{new_spot}（稍后轮换自动采用）",
+            ],
+            timeout=10,
+            check=False,
+        )
+    except Exception:  # noqa: BLE001 - notification is best-effort
+        pass
+
+
+def main() -> int:
+    bing_dir = ROOT / "Bing"
+    spot_dir = ROOT / "Spotlight"
+    bing_dir.mkdir(parents=True, exist_ok=True)
+    spot_dir.mkdir(parents=True, exist_ok=True)
+
+    results = {}
+    for label, fn, out in (("bing", fetch_bing, bing_dir), ("spotlight", fetch_spotlight, spot_dir)):
+        print(f"[{label}] fetching ...")
+        try:
+            results[label] = fn(out)
+        except Exception as e:  # noqa: BLE001 - one source failing is not fatal
+            print(f"  [{label}] FAILED: {e}", file=sys.stderr)
+            results[label] = None
+
+    removed = enforce_retention(bing_dir) + enforce_retention(spot_dir)
+
+    new_bing = results["bing"][0] if results["bing"] else 0
+    new_spot = results["spotlight"][0] if results["spotlight"] else 0
+    total_bing = len(list(bing_dir.glob("*.jpg")))
+    total_spot = len(list(spot_dir.glob("*.jpg")))
+    print(
+        f"done: new bing={new_bing} spotlight={new_spot}, "
+        f"library bing={total_bing} spotlight={total_spot}, "
+        f"retention removed={removed}"
+    )
+    notify(new_bing, new_spot)
+
+    if all(v is None for v in results.values()):
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

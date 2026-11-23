@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Bing & Windows Spotlight wallpapers every 6 hours
+
+[Timer]
+OnBootSec=2min
+OnCalendar=*-*-* 00/6:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
