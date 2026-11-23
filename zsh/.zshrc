@@ -108,7 +108,7 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-alias vide="neovide --fork"
+alias vide="neovide --fork --no-startup-message-capture"
 # alias neovide="neovide --fork"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
