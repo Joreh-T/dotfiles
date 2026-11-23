@@ -187,7 +187,7 @@ layout {
     // - "always", the focused column will always be centered.
     // - "on-overflow", focusing a column will center it if it doesn't fit
     //   together with the previously focused column.
-    center-focused-column "on-overflow"
+    center-focused-column "never"
     // Center a lone column on a workspace, even though on-overflow alone wouldn't.
     always-center-single-column
 
@@ -688,7 +688,7 @@ binds {
 
     // Expand the focused column to space not taken up by other fully visible columns.
     // Makes the column "fill the rest of the space".
-    // Mod+Ctrl+F { expand-column-to-available-width; }
+    Mod+Ctrl+F { expand-column-to-available-width; }
 
     Mod+C { center-column; }
 
