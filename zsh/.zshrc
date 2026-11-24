@@ -116,6 +116,18 @@ alias vide="neovide --fork --no-startup-message-capture"
 # fnm (Node version management) -- silently skip when not installed, ensuring multi-PC portability
 command -v fnm >/dev/null 2>&1 && eval "$(fnm env --use-on-cd --shell zsh)"
 
+# yazi -- `y` wrapper: the shell follows yazi's last directory on exit (`q` follows, `Q` stays).
+# Silently skipped when yazi is absent, keeping the file portable across machines.
+if command -v yazi >/dev/null 2>&1; then
+  y() {
+    local tmp cwd
+    tmp="$(mktemp -t yazi-cwd.XXXXXX)" || return 1
+    command yazi "$@" --cwd-file="$tmp"
+    IFS= read -r -d '' cwd < "$tmp"
+    [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+    command rm -f -- "$tmp"
+  }
+fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
