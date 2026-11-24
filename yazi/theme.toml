@@ -6,13 +6,15 @@
 added_sign = ""
 ignored_sign = ""
 deleted_sign = ""
-modified_sign = ""
+unstaged_sign = ""
 untracked_sign = ""
-updated_sign = ""
+updated_sign = ""
+staged_sign = "✔"
 
-modified = {fg = "yellow"}
+unstaged = {fg = "yellow"}
+staged = {fg = "green"}
 added = {fg = "magenta"}
 deleted = {fg = "red"}
 ignored = {fg = "gray"}
-untracked = {fg = "green"}
-updated = {fg = "blue"}
+untracked = {fg = "cyan"}
+updated = { fg = "lightred", bold = true }
