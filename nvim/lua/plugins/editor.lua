@@ -73,17 +73,17 @@ return {
         end,
     },
 
-    {
-        -- Fuzzy finder which is used by fzf-lua
-        "junegunn/fzf",
-        build = function()
-            if vim.fn.executable("fzf") == 0 then
-                return "./install --bin"
-            else
-                return nil -- Don't inastall if fzf is already installed
-            end
-        end,
-    },
+    -- {
+    --     -- Fuzzy finder which is used by fzf-lua
+    --     "junegunn/fzf",
+    --     build = function()
+    --         if vim.fn.executable("fzf") == 0 then
+    --             return "./install --bin"
+    --         else
+    --             return nil -- Don't inastall if fzf is already installed
+    --         end
+    --     end,
+    -- },
 
     {
         -- Fuzzy finder for nvim. Replaced telescope.nvim
