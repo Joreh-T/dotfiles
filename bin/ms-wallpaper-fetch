@@ -5,7 +5,7 @@ Sources (both verified reachable from CN networks, 2026-09-03):
 
   Windows Spotlight (Windows 11 desktop spotlight feed, 3840x2160):
     https://fd.api.iris.microsoft.com/v4/api/selection
-        ?placement=88000820&bcnt=4&country=CN&locale=zh-CN&fmt=json
+        ?placement=88000820&bcnt=1&country=CN&locale=zh-CN&fmt=json
     - Needs a browser-ish User-Agent, otherwise the endpoint answers
       "No ad available" (documented in ORelio/Spotlight-Downloader).
     - Response is double-encoded: batchrsp.items[].item holds a JSON
@@ -14,7 +14,7 @@ Sources (both verified reachable from CN networks, 2026-09-03):
       host). ad.title gives a human-readable (localized) caption.
 
   Bing image of the day (UHD when available, else 1920x1080):
-    https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=zh-CN
+    https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN
     - Each entry exposes urlbase; append _UHD.jpg (fallback _1920x1080.jpg)
       and prefix https://www.bing.com.
 
@@ -47,11 +47,16 @@ TIMEOUT = 30
 RETRIES = 2
 UA = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 
+# bcnt=1 / n=1: take only the freshest image per source per run. Multi-item
+# batches (bcnt=4 / n=8) re-download recently deleted wallpapers because the
+# feed window still contains them — dedup is by filename, deletion is not
+# tracked (2026-11-24). The library is meant to grow one image a day anyway.
+
 SPOTLIGHT_URL = (
     "https://fd.api.iris.microsoft.com/v4/api/selection"
-    "?placement=88000820&bcnt=4&country=CN&locale=zh-CN&fmt=json"
+    "?placement=88000820&bcnt=1&country=CN&locale=zh-CN&fmt=json"
 )
-BING_URL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=zh-CN"
+BING_URL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
 
 
 def http_get(url: str) -> bytes:
